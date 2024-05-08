@@ -35,6 +35,59 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub NoQueueLimitTest()
+		  NoQueueLimitTester = new ThreeN1ThreadPool
+		  NoQueueLimitTester.QueueLimit = 0
+		  
+		  AddHandler NoQueueLimitTester.ResultAvailable, AddressOf NoQueueLimitTester_ResultAvailable
+		  AddHandler NoQueueLimitTester.Finished, AddressOf NoQueueLimitTester_Finished
+		  
+		  NoQueueLimitData = new Set
+		  
+		  const kStartValue as integer = 1000000
+		  const kEndValue as integer = kStartValue + 1
+		  
+		  for i as integer = kStartValue to kEndValue
+		    NoQueueLimitTester.Queue i
+		    NoQueueLimitData.Add i
+		  next
+		  
+		  Assert.IsFalse NoQueueLimitTester.QueueIsFull
+		  
+		  NoQueueLimitTester.Close
+		  
+		  AsyncAwait 5
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub NoQueueLimitTester_Finished(sender As ThreadPool)
+		  #pragma unused sender
+		  
+		  RemoveHandler NoQueueLimitTester.ResultAvailable, AddressOf NoQueueLimitTester_ResultAvailable
+		  RemoveHandler NoQueueLimitTester.Finished, AddressOf NoQueueLimitTester_Finished
+		  
+		  NoQueueLimitTester = nil
+		  
+		  Assert.AreEqual 0, NoQueueLimitData.Count
+		  
+		  AsyncComplete
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub NoQueueLimitTester_ResultAvailable(sender As ThreadPool, result As Variant, tag As Variant)
+		  #pragma unused sender
+		  
+		  Assert.AreEqual 1, result.IntegerValue
+		  
+		  NoQueueLimitData.Remove tag
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub StopTest()
 		  StopTester = new EndlessThreadPool
 		  StopTester.Queue 1
@@ -71,11 +124,19 @@ Inherits TestGroup
 
 
 	#tag Property, Flags = &h21
-		Private ExceptionTester As ExceptionThreadPool
+		Private ExceptionTester As ThreadPool
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private StopTester As EndlessThreadPool
+		Private NoQueueLimitData As Set
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private NoQueueLimitTester As ThreadPool
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private StopTester As ThreadPool
 	#tag EndProperty
 
 

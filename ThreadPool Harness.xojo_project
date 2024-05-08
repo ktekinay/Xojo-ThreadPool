@@ -32,6 +32,7 @@ Folder=ThreadPoolTests;ThreadPoolTests;&h00000000674E2FFF;&h0000000000000000;fal
 Class=ThreadPoolTests;ThreadPoolTests/ThreadPoolTests.xojo_code;&h000000005940AFFF;&h00000000674E2FFF;false
 Class=ExceptionThreadPool;ThreadPoolTests/ExceptionThreadPool.xojo_code;&h000000005DD067FF;&h00000000674E2FFF;false
 Class=EndlessThreadPool;ThreadPoolTests/EndlessThreadPool.xojo_code;&h0000000004F20FFF;&h00000000674E2FFF;false
+Class=ThreeN1ThreadPool;ThreadPoolTests/ThreeN1ThreadPool.xojo_code;&h000000005D429FFF;&h00000000674E2FFF;false
 DefaultWindow=XojoUnitTestWindow
 AppMenuBar=XojoUnitMenuBar
 MajorVersion=1
