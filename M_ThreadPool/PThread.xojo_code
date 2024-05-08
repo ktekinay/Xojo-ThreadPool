@@ -3,28 +3,27 @@ Private Class PThread
 Inherits Thread
 	#tag Event
 		Sub Run()
-		  const kSleepMs as integer = 10
-		  
-		  static noData as new M_ThreadPool.NoDataAvailable
-		  
 		  self.Type = Thread.Types.Preemptive
 		  
 		  do
-		    if self.Data is noData then
+		    var item as pair
+		    if not DataQueue.TryPop( item ) then
+		      if IsClosed then
+		        exit
+		      end if
+		      
 		      Pause
 		      continue
 		    end if
 		    
-		    var data as variant = self.Data
-		    self.Data = noData
-		    
-		    var tag as variant = self.Tag
-		    self.Tag = nil
+		    var tag as variant = item.Left
+		    var data as variant = item.Right
 		    
 		    var result as variant
 		    
 		    try
 		      result = RaiseEvent Process( data )
+		      
 		    catch err as RuntimeException
 		      if err isa EndException or err isa ThreadEndException then
 		        raise err
@@ -35,6 +34,7 @@ Inherits Thread
 		    
 		    AddUserInterfaceUpdate tag : result
 		  loop
+		  
 		End Sub
 	#tag EndEvent
 
@@ -45,11 +45,11 @@ Inherits Thread
 
 
 	#tag Property, Flags = &h0
-		Data As Variant
+		DataQueue As M_ThreadPool.Queuer
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		Tag As Variant
+		IsClosed As Boolean
 	#tag EndProperty
 
 
