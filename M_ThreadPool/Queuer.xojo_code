@@ -30,6 +30,17 @@ Private Class Queuer
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub RemoveAll()
+		  var lock as new M_ThreadPool.Locker( MySemaphore )
+		  
+		  Data.RemoveAll
+		  
+		  lock = nil
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function TryPop(ByRef data As Pair) As Boolean
 		  var lock as new Locker( MySemaphore )
 		  

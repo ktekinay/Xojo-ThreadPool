@@ -17,11 +17,13 @@ Class ThreadPool
 
 	#tag Method, Flags = &h0, Description = 43616C6C207468697320746F20696E6469636174652074686174206E6F206D6F726520646174612077696C6C20626520616464656420746F2074686520717565756520666F722070726F63657373696E672E
 		Sub Close()
+		  if IsClosed then
+		    return
+		  end if
+		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
 		  next
-		  
-		  IsClosed = true
 		  
 		  PoolCleaner = new Timer
 		  AddHandler PoolCleaner.Action, AddressOf PoolCleaner_Action
@@ -42,8 +44,12 @@ Class ThreadPool
 	#tag Method, Flags = &h21
 		Private Sub PoolCleaner_Action(sender As Timer)
 		  if Pool.Count = 0 then
+		    DataQueue.RemoveAll
+		    
 		    sender.RunMode = Timer.RunModes.Off
 		    RemoveHandler sender.Action, AddressOf PoolCleaner_Action
+		    PoolCleaner = nil
+		    
 		    
 		    return
 		  end if
@@ -95,7 +101,7 @@ Class ThreadPool
 	#tag Method, Flags = &h0, Description = 416464732074686520676976656E2060646174616020746F2074686520717565756520666F722070726F63657373696E672E20496620607461676020697320676976656E2C2069742077696C6C2062652072657475726E656420696E2074686520526573756C74417661696C61626C65206576656E742E204966206E6F7420676976656E2C206064617461602077696C6C206265207573656420617320746865207461672E
 		Sub Queue(data As Variant, tag As Variant = Nil)
 		  if IsClosed then
-		    raise new UnsupportedOperationException( "Cannot reuse a closed ThreadPool" )
+		    raise new UnsupportedOperationException( "Cannot queue data to a closed ThreadPool until all processes have completed" )
 		  end if
 		  
 		  if tag is nil then
@@ -187,14 +193,20 @@ Class ThreadPool
 		Private DataQueue As M_ThreadPool.Queuer
 	#tag EndProperty
 
-	#tag Property, Flags = &h21
-		Private IsClosed As Boolean
-	#tag EndProperty
-
-	#tag ComputedProperty, Flags = &h0, Description = 53657420746F2054727565206F6E636520436F6D706C6574652069732063616C6C656420616E6420616C6C20726573756C74732068617665206265656E2072657475726E65642E
+	#tag ComputedProperty, Flags = &h21
 		#tag Getter
 			Get
-			  return IsClosed and Pool.Count = 0
+			  return PoolCleaner isa object
+			  
+			End Get
+		#tag EndGetter
+		Private IsClosed As Boolean
+	#tag EndComputedProperty
+
+	#tag ComputedProperty, Flags = &h0, Description = 52657475726E732054727565207768656E206E6F2054687265616473206172652072756E6E696E672E
+		#tag Getter
+			Get
+			  return Pool.Count = 0
 			  
 			End Get
 		#tag EndGetter
