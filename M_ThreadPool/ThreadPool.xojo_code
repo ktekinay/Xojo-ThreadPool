@@ -50,7 +50,6 @@ Class ThreadPool
 		    RemoveHandler sender.Action, AddressOf PoolCleaner_Action
 		    PoolCleaner = nil
 		    
-		    
 		    return
 		  end if
 		  
