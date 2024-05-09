@@ -19,20 +19,18 @@ Inherits Thread
 		    var tag as variant = item.Left
 		    var data as variant = item.Right
 		    
-		    var result as variant
+		    RaiseEvent Process( data, tag )
 		    
-		    try
-		      result = RaiseEvent Process( data )
-		      
-		    catch err as RuntimeException
-		      if err isa EndException or err isa ThreadEndException then
-		        raise err
-		      end if
-		      
-		      result = new M_ThreadPool.ThreadPoolException( err )
-		    end try
-		    
-		    AddUserInterfaceUpdate tag : result
+		    'try
+		    'catch err as RuntimeException
+		    'if err isa EndException or err isa ThreadEndException then
+		    'raise err
+		    'end if
+		    '
+		    'result = new M_ThreadPool.ThreadPoolException( err )
+		    'end try
+		    '
+		    'AddUserInterfaceUpdate tag : result
 		  loop
 		  
 		End Sub
@@ -40,7 +38,7 @@ Inherits Thread
 
 
 	#tag Hook, Flags = &h0
-		Event Process(data As Variant) As Variant
+		Event Process(data As Variant, tag As Variant)
 	#tag EndHook
 
 

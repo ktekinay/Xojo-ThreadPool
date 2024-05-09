@@ -6,7 +6,6 @@ Inherits TestGroup
 		  return
 		  
 		  ExceptionTester = new ExceptionThreadPool
-		  AddHandler ExceptionTester.Error, WeakAddressOf ExceptionTester_Error
 		  ExceptionTester.Queue 1
 		  
 		  self.AsyncAwait 1
@@ -17,8 +16,6 @@ Inherits TestGroup
 	#tag Method, Flags = &h21
 		Private Sub ExceptionTester_Error(sender As ThreadPool, error As RuntimeException, tag As Variant)
 		  #pragma unused sender
-		  
-		  RemoveHandler ExceptionTester.Error, WeakAddressOf ExceptionTester_Error
 		  
 		  Assert.AreEqual "General Exception", error.Message
 		  Assert.AreEqual 1, tag.IntegerValue
@@ -39,22 +36,20 @@ Inherits TestGroup
 		  NoQueueLimitTester = new ThreeN1ThreadPool
 		  NoQueueLimitTester.QueueLimit = 0
 		  
-		  AddHandler NoQueueLimitTester.ResultAvailable, AddressOf NoQueueLimitTester_ResultAvailable
 		  AddHandler NoQueueLimitTester.Finished, AddressOf NoQueueLimitTester_Finished
 		  
-		  NoQueueLimitData = new Set
-		  
+		  const kCount as integer = 20
 		  const kStartValue as integer = 1000000
-		  const kEndValue as integer = kStartValue + 1
+		  const kEndValue as integer = kStartValue + kCount - 1
 		  
 		  for i as integer = kStartValue to kEndValue
 		    NoQueueLimitTester.Queue i
-		    NoQueueLimitData.Add i
 		  next
 		  
 		  Assert.IsFalse NoQueueLimitTester.QueueIsFull
 		  
-		  NoQueueLimitTester.Close
+		  NoQueueLimitTester.Wait
+		  Assert.AreEqual kCount, NoQueueLimitTester.Result
 		  
 		  AsyncAwait 5
 		End Sub
@@ -62,27 +57,11 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h21
 		Private Sub NoQueueLimitTester_Finished(sender As ThreadPool)
-		  #pragma unused sender
-		  
-		  RemoveHandler NoQueueLimitTester.ResultAvailable, AddressOf NoQueueLimitTester_ResultAvailable
-		  RemoveHandler NoQueueLimitTester.Finished, AddressOf NoQueueLimitTester_Finished
+		  RemoveHandler sender.Finished, AddressOf NoQueueLimitTester_Finished
 		  
 		  NoQueueLimitTester = nil
 		  
-		  Assert.AreEqual 0, NoQueueLimitData.Count
-		  
 		  AsyncComplete
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub NoQueueLimitTester_ResultAvailable(sender As ThreadPool, result As Variant, tag As Variant)
-		  #pragma unused sender
-		  
-		  Assert.AreEqual 1, result.IntegerValue
-		  
-		  NoQueueLimitData.Remove tag
 		  
 		End Sub
 	#tag EndMethod
@@ -128,11 +107,7 @@ Inherits TestGroup
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private NoQueueLimitData As Set
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private NoQueueLimitTester As ThreadPool
+		Private NoQueueLimitTester As ThreeN1ThreadPool
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

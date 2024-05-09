@@ -25,11 +25,12 @@ Class ThreadPool
 		    t.IsClosed = true
 		  next
 		  
-		  PoolCleaner = new Timer
-		  AddHandler PoolCleaner.Action, AddressOf PoolCleaner_Action
+		  PoolCleaner = new Thread
+		  AddHandler PoolCleaner.Run, AddressOf PoolCleaner_Run
+		  AddHandler PoolCleaner.UserInterfaceUpdate, AddressOf PoolCleaner_UserInterfaceUpdate
 		  
-		  PoolCleaner.Period = 20
-		  PoolCleaner.RunMode = Timer.RunModes.Multiple
+		  PoolCleaner.Start
+		  
 		  
 		End Sub
 	#tag EndMethod
@@ -42,58 +43,58 @@ Class ThreadPool
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub PoolCleaner_Action(sender As Timer)
-		  if Pool.Count = 0 then
-		    DataQueue.RemoveAll
-		    
-		    sender.RunMode = Timer.RunModes.Off
-		    RemoveHandler sender.Action, AddressOf PoolCleaner_Action
-		    PoolCleaner = nil
-		    
-		    RaiseEvent Finished
-		    
-		    return
-		  end if
-		  
-		  for i as integer = Pool.LastIndex downto 0
-		    var t as M_ThreadPool.PThread = Pool( i )
-		    
-		    if t.ThreadState = Thread.ThreadStates.NotRunning then
-		      RemoveThreadFromPool t
+		Private Sub PoolCleaner_Run(sender As Thread)
+		  do
+		    if Pool.Count = 0 then
+		      DataQueue.RemoveAll
+		      
+		      sender.AddUserInterfaceUpdate true : nil
+		      
+		      exit
 		    end if
-		  next
+		    
+		    for i as integer = Pool.LastIndex downto 0
+		      var t as M_ThreadPool.PThread = Pool( i )
+		      
+		      if t.ThreadState = Thread.ThreadStates.NotRunning then
+		        RemoveThreadFromPool t
+		      end if
+		    next
+		    
+		    sender.Sleep 20, true
+		  loop
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub PoolCleaner_UserInterfaceUpdate(sender As Thread, data() As Dictionary)
+		  #pragma unused sender
+		  #pragma unused data
+		  
+		  RemoveHandler PoolCleaner.Run, AddressOf PoolCleaner_Run
+		  RemoveHandler PoolCleaner.UserInterfaceUpdate, AddressOf PoolCleaner_UserInterfaceUpdate
+		  
+		  PoolCleaner = nil
+		  
+		  RaiseEvent Finished
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Function PThread_Process(sender As M_ThreadPool.PThread, data As Variant) As Variant
+		Private Sub PThread_Process(sender As M_ThreadPool.PThread, data As Variant, tag As Variant)
 		  #pragma unused sender
 		  
-		  return RaiseEvent Process( data )
+		  RaiseEvent Process( data, tag )
 		  
-		End Function
+		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub PThread_UserInterfaceUpdate(sender As M_ThreadPool.PThread, data() As Dictionary)
 		  #pragma unused sender
 		  
-		  for each dict as Dictionary in data
-		    var tags() as variant = dict.Keys
-		    var results() as variant = dict.Values
-		    
-		    for i as integer = 0 to tags.LastIndex
-		      var tag as variant = tags( i )
-		      var result as variant = results( i )
-		      
-		      if result isa M_ThreadPool.ThreadPoolException then
-		        RaiseEvent Error( M_ThreadPool.ThreadPoolException( result ).WrappedException, tag )
-		      else
-		        RaiseEvent ResultAvailable( result, tag )
-		      end if
-		    next
-		  next
+		  RaiseEvent UserInterfaceUpdate( data )
 		  
 		  
 		End Sub
@@ -103,10 +104,6 @@ Class ThreadPool
 		Sub Queue(data As Variant, tag As Variant = Nil)
 		  if IsClosed then
 		    raise new UnsupportedOperationException( "Cannot queue data to a closed ThreadPool until all processes have completed" )
-		  end if
-		  
-		  if tag is nil then
-		    tag = data
 		  end if
 		  
 		  var awakened as boolean
@@ -163,6 +160,16 @@ Class ThreadPool
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0, Description = 5761697420756E74696C20616C6C20746872656164732061726520636F6D706C6574652E20496D706C69657320436C6F73652E
+		Sub Wait()
+		  Close
+		  
+		  while not IsFinished
+		  wend
+		  
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h21
 		Private Function WakeAThread() As Boolean
 		  for each t as M_ThreadPool.PThread in Pool
@@ -177,20 +184,16 @@ Class ThreadPool
 	#tag EndMethod
 
 
-	#tag Hook, Flags = &h0, Description = 52657475726E73207468652052756E74696D65457863657074696F6E2074686174206F63637572726564207768696C652070726F63657373696E672074686520676976656E207461672E
-		Event Error(error As RuntimeException, tag As Variant)
-	#tag EndHook
-
 	#tag Hook, Flags = &h0, Description = 416C6C2070726F63657373696E672068617320636F6E636C7564656420616674657220436C6F7365206F722053746F70207761732063616C6C65642E
 		Event Finished()
 	#tag EndHook
 
 	#tag Hook, Flags = &h0, Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Event Process(data As Variant) As Variant
+		Event Process(data As Variant, tag As Variant)
 	#tag EndHook
 
-	#tag Hook, Flags = &h0, Description = 52657475726E732074686520726573756C742066726F6D2070726F63657373696E67207468652064617461206173736F63696174656420776974682074686520676976656E207461672E
-		Event ResultAvailable(result As Variant, tag As Variant)
+	#tag Hook, Flags = &h0
+		Event UserInterfaceUpdate(data() As Dictionary)
 	#tag EndHook
 
 
@@ -227,7 +230,7 @@ Class ThreadPool
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private PoolCleaner As Timer
+		Private PoolCleaner As Thread
 	#tag EndProperty
 
 	#tag ComputedProperty, Flags = &h0

@@ -2,8 +2,9 @@
 Protected Class EndlessThreadPool
 Inherits ThreadPool
 	#tag Event , Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Function Process(data As Variant) As Variant
+		Sub Process(data As Variant, tag As Variant)
 		  #pragma unused data
+		  #pragma unused tag
 		  
 		  var index as integer
 		  do
@@ -12,7 +13,7 @@ Inherits ThreadPool
 		    Thread.SleepCurrent 1000
 		  loop
 		  
-		End Function
+		End Sub
 	#tag EndEvent
 
 
