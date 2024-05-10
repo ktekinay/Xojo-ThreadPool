@@ -130,6 +130,19 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub QueueIsFullTest()
+		  var tp as new ThreeN1ThreadPool
+		  tp.QueueLimit = 1
+		  
+		  tp.Queue 100000
+		  tp.Queue 2000000
+		  
+		  Assert.IsTrue tp.QueueIsFull
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub StopTest()
 		  var stopTester as new EndlessThreadPool
 		  
