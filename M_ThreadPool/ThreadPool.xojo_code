@@ -192,7 +192,7 @@ Class ThreadPool
 		Event Process(data As Variant, tag As Variant)
 	#tag EndHook
 
-	#tag Hook, Flags = &h0
+	#tag Hook, Flags = &h0, Description = 526169736564207768656E206120546872656164206973737565732041646455736572496E746572666163655570646174652E
 		Event UserInterfaceUpdate(data() As Dictionary)
 	#tag EndHook
 
