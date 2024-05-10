@@ -320,23 +320,17 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Private PoolCleaner As Thread
 	#tag EndProperty
 
-	#tag ComputedProperty, Flags = &h0
+	#tag ComputedProperty, Flags = &h0, Description = 546865206D6178696D756D206E756D626572206F66206974656D7320617320646566696E65642062792051756575654C696D6974206172652077616974696E6720696E207468652071756575652E
 		#tag Getter
 			Get
-			  var queueLimit as integer = self.QueueLimit
-			  
-			  if queueLimit > 0 and queueLimit < Jobs then
-			    queueLimit = Jobs
-			  end if
-			  
-			  return queueLimit > 0 and DataQueue.Count >= queueLimit
+			  return QueueLimit > 0 and DataQueue.Count >= QueueLimit
 			  
 			End Get
 		#tag EndGetter
 		QueueIsFull As Boolean
 	#tag EndComputedProperty
 
-	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D652E205768656E20616464696E6720616E6F74686572206974656D2C20746869732077696C6C2068616E6720756E74696C2069742063616E2062652070726F6365737365642E0A0A4D757374206265207A65726F2028756E6C696D6974656429206F72206174206C6561737420746865206E756D626572206F66204A6F62732E
+	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D652E20557365207A65726F20666F7220756E6C696D697465642E
 		QueueLimit As Integer = 8
 	#tag EndProperty
 
@@ -344,7 +338,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Private RaiseQueueDrainedEventTimer As Timer
 	#tag EndProperty
 
-	#tag ComputedProperty, Flags = &h0
+	#tag ComputedProperty, Flags = &h0, Description = 546865206E756D626572206F66206974656D732077616974696E6720746F2062652070726F6365737365642E
 		#tag Getter
 			Get
 			  return DataQueue.Count
@@ -405,7 +399,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Jobs"
-			Visible=false
+			Visible=true
 			Group="Behavior"
 			InitialValue="4"
 			Type="Integer"
@@ -421,7 +415,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="QueueLimit"
-			Visible=false
+			Visible=true
 			Group="Behavior"
 			InitialValue="8"
 			Type="Integer"
@@ -437,7 +431,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Type"
-			Visible=false
+			Visible=true
 			Group="Behavior"
 			InitialValue="Thread.Types.Preemptive"
 			Type="Thread.Types"
