@@ -2,23 +2,60 @@
 Protected Class ThreadPoolTests
 Inherits TestGroup
 	#tag Method, Flags = &h0
-		Sub ExceptionTest()
-		  return
+		Sub CooperativeTest()
+		  var tp as new ThreeN1ThreadPool
+		  tp.Type = Thread.Types.Cooperative
 		  
-		  ExceptionTester = new ExceptionThreadPool
-		  ExceptionTester.Queue 1
+		  tp.Queue 1000
+		  tp.Queue 2000
 		  
-		  self.AsyncAwait 1
+		  tp.Wait
 		  
+		  Assert.IsTrue tp.IsFinished
+		  Assert.AreEqual 2, tp.Result
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub DestructorTest()
+		  var tp as new ThreeN1ThreadPool
+		  tp.QueueLimit = 0
+		  
+		  for i as integer = 1 to 1000
+		    tp.Queue i
+		  next
+		  
+		  var wr as new WeakRef( tp )
+		  
+		  tp = nil
+		  
+		  Assert.IsNil wr.Value
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub FinishedTest()
+		  FinishedTester = new ThreeN1ThreadPool
+		  AddHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
+		  
+		  for i as integer = 1001 to 1010
+		    FinishedTester.Queue i
+		  next
+		  
+		  FinishedTester.Close
+		  
+		  AsyncAwait 5
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub ExceptionTester_Error(sender As ThreadPool, error As RuntimeException, tag As Variant)
-		  #pragma unused sender
+		Private Sub FinishedTester_Finished(sender As ThreadPool)
+		  RemoveHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
 		  
-		  Assert.AreEqual "General Exception", error.Message
-		  Assert.AreEqual 1, tag.IntegerValue
+		  Assert.AreEqual 0, sender.RemainingInQueue
+		  Assert.AreEqual 10, FinishedTester.Result
+		  
+		  FinishedTester = nil
 		  
 		  AsyncComplete
 		End Sub
@@ -67,37 +104,50 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub StopTest()
-		  StopTester = new EndlessThreadPool
-		  StopTester.Queue 1
+		Sub QueueDrainedTest()
+		  QueueDrainedTester = new ThreeN1ThreadPool
+		  AddHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
 		  
-		  Assert.IsFalse StopTester.IsFinished
+		  for i as integer = 1001 to 1010
+		    QueueDrainedTester.Queue i
+		  next
 		  
-		  var spy as new ObjectSpy( StopTester )
-		  var pool() as object = spy.Pool
-		  var count as integer = pool.Count
-		  Assert.AreEqual 1, count
-		  
-		  AddHandler StopTester.Finished, WeakAddressOf StopTester_Finished
-		  StopTester.Stop
-		  
-		  AsyncAwait 1
+		  AsyncAwait 5
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub StopTester_Finished(sender As ThreadPool)
-		  var spy as new ObjectSpy( sender )
-		  var pool() as object = spy.Pool
+		Private Sub QueueDrainedTester_QueueDrained(sender As ThreadPool)
+		  Assert.IsFalse sender.IsFinished
+		  Assert.AreEqual 10, QueueDrainedTester.Result
 		  
-		  var count as integer = pool.Count
-		  Assert.AreEqual 0, count
-		  Assert.IsTrue sender.IsFinished
-		  
-		  StopTester = nil
+		  RemoveHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
+		  QueueDrainedTester = nil
 		  
 		  AsyncComplete
 		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub StopTest()
+		  var stopTester as new EndlessThreadPool
+		  
+		  stopTester.Queue 1
+		  
+		  Assert.IsFalse StopTester.IsFinished
+		  
+		  var spy as new ObjectSpy( stopTester )
+		  var pool() as object = spy.Pool
+		  var count as integer = pool.Count
+		  Assert.AreEqual 1, count
+		  
+		  stopTester.Stop
+		  
+		  Assert.AreEqual 0, stopTester.RemainingInQueue
+		  
+		  count = pool.Count
+		  Assert.AreEqual 0, count
 		End Sub
 	#tag EndMethod
 
@@ -107,11 +157,15 @@ Inherits TestGroup
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
+		Private FinishedTester As ThreeN1ThreadPool
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
 		Private NoQueueLimitTester As ThreeN1ThreadPool
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private StopTester As ThreadPool
+		Private QueueDrainedTester As ThreeN1ThreadPool
 	#tag EndProperty
 
 

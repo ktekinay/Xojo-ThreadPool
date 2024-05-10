@@ -3,14 +3,31 @@ Private Class PThread
 Inherits Thread
 	#tag Event
 		Sub Run()
-		  self.Type = Thread.Types.Preemptive
+		  #if DebugBuild
+		    if Type = Thread.Types.Preemptive then
+		      System.DebugLog "Launched preemptive thread"
+		    else
+		      System.DebugLog "Launched cooperative thread"
+		    end if
+		  #endif
 		  
 		  do
+		    var host as M_ThreadPool.ThreadPool = MyThreadPool
+		    
+		    if host is nil then
+		      exit
+		    end if
+		    
 		    var item as pair
-		    if not DataQueue.TryPop( item ) then
+		    if not ThreadPoolInterface( host ).GetNextItem( item ) then
 		      if IsClosed then
 		        exit
 		      end if
+		      
+		      //
+		      // Drop references
+		      //
+		      host = nil
 		      
 		      Pause
 		      continue
@@ -19,35 +36,42 @@ Inherits Thread
 		    var tag as variant = item.Left
 		    var data as variant = item.Right
 		    
-		    RaiseEvent Process( data, tag )
-		    
-		    'try
-		    'catch err as RuntimeException
-		    'if err isa EndException or err isa ThreadEndException then
-		    'raise err
-		    'end if
-		    '
-		    'result = new M_ThreadPool.ThreadPoolException( err )
-		    'end try
-		    '
-		    'AddUserInterfaceUpdate tag : result
+		    ThreadPoolInterface( host ).RaiseProcessEvent( data, tag )
 		  loop
 		  
 		End Sub
 	#tag EndEvent
 
 
-	#tag Hook, Flags = &h0
-		Event Process(data As Variant, tag As Variant)
-	#tag EndHook
-
-
-	#tag Property, Flags = &h0
-		DataQueue As M_ThreadPool.Queuer
-	#tag EndProperty
-
 	#tag Property, Flags = &h0
 		IsClosed As Boolean
+	#tag EndProperty
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  if MyThreadPoolWeakRef is nil then
+			    return nil
+			  else
+			    return M_ThreadPool.ThreadPool( MyThreadPoolWeakRef.Value )
+			  end if
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  if value is nil then
+			    MyThreadPoolWeakRef = nil
+			  else
+			    MyThreadPoolWeakRef = ThreadPoolInterface( value).GetWeakRef
+			  end if
+			  
+			End Set
+		#tag EndSetter
+		MyThreadPool As M_ThreadPool.ThreadPool
+	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21
+		Private MyThreadPoolWeakRef As WeakRef
 	#tag EndProperty
 
 

@@ -1,13 +1,13 @@
 #tag Class
 Class ThreadPool
+Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h21
 		Private Sub AddThreadToPool()
 		  var t as new M_ThreadPool.PThread
+		  t.Type = Type
+		  t.MyThreadPool = self
 		  
-		  t.DataQueue = self.DataQueue
-		  
-		  AddHandler t.Process, AddressOf PThread_Process
-		  AddHandler t.UserInterfaceUpdate, AddressOf PThread_UserInterfaceUpdate
+		  AddHandler t.UserInterfaceUpdate, WeakAddressOf PThread_UserInterfaceUpdate
 		  
 		  t.Start
 		  
@@ -17,20 +17,21 @@ Class ThreadPool
 
 	#tag Method, Flags = &h0, Description = 43616C6C207468697320746F20696E6469636174652074686174206E6F206D6F726520646174612077696C6C20626520616464656420746F2074686520717565756520666F722070726F63657373696E672E
 		Sub Close()
-		  if IsClosed then
+		  if IsClosed or Pool.Count = 0 then
 		    return
 		  end if
 		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
+		    if t.ThreadState = Thread.ThreadStates.Paused then
+		      t.Resume
+		    end if
 		  next
 		  
 		  PoolCleaner = new Thread
 		  AddHandler PoolCleaner.Run, AddressOf PoolCleaner_Run
-		  AddHandler PoolCleaner.UserInterfaceUpdate, AddressOf PoolCleaner_UserInterfaceUpdate
 		  
 		  PoolCleaner.Start
-		  
 		  
 		End Sub
 	#tag EndMethod
@@ -39,7 +40,52 @@ Class ThreadPool
 		Sub Constructor()
 		  DataQueue = new M_ThreadPool.Queuer
 		  
+		  RaiseQueueDrainedEventTimer = new Timer
+		  RaiseQueueDrainedEventTimer.Period = 1
+		  AddHandler RaiseQueueDrainedEventTimer.Action, WeakAddressOf RaiseQueueDrainedEventTimer_Action
+		  
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub Destructor()
+		  #if DebugBuild
+		    System.DebugLog "ThreadPool.Destructor"
+		  #endif
+		  
+		  IsDestructing = true
+		  Stop
+		  
+		  RaiseQueueDrainedEventTimer.RunMode = Timer.RunModes.Off
+		  RemoveHandler RaiseQueueDrainedEventTimer.Action, WeakAddressOf RaiseQueueDrainedEventTimer_Action
+		  RaiseQueueDrainedEventTimer = nil
+		  
+		  do
+		  loop until Pool.Count = 0
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function GetNextItem(ByRef item As Pair) As Boolean
+		  if DataQueue.TryPop( item ) then
+		    return true
+		  end if
+		  
+		  if not IsClosed and not IsDestructing then
+		    RaiseQueueDrainedEventTimer.RunMode = Timer.RunModes.Single
+		  end if
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function GetWeakRef() As WeakRef
+		  if mWeakRef is nil then
+		    mWeakRef = new WeakRef( self )
+		  end if
+		  
+		  return mWeakRef
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
@@ -48,7 +94,14 @@ Class ThreadPool
 		    if Pool.Count = 0 then
 		      DataQueue.RemoveAll
 		      
-		      sender.AddUserInterfaceUpdate true : nil
+		      if sender isa object then
+		        RemoveHandler sender.Run, AddressOf PoolCleaner_Run
+		        PoolCleaner = nil
+		        
+		        if not IsDestructing then
+		          Timer.CallLater 1, AddressOf RaiseFinishedEvent
+		        end if
+		      end if
 		      
 		      exit
 		    end if
@@ -61,32 +114,10 @@ Class ThreadPool
 		      end if
 		    next
 		    
-		    sender.Sleep 20, true
+		    if sender isa object then
+		      sender.Sleep 20, true
+		    end if
 		  loop
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub PoolCleaner_UserInterfaceUpdate(sender As Thread, data() As Dictionary)
-		  #pragma unused sender
-		  #pragma unused data
-		  
-		  RemoveHandler PoolCleaner.Run, AddressOf PoolCleaner_Run
-		  RemoveHandler PoolCleaner.UserInterfaceUpdate, AddressOf PoolCleaner_UserInterfaceUpdate
-		  
-		  PoolCleaner = nil
-		  
-		  RaiseEvent Finished
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub PThread_Process(sender As M_ThreadPool.PThread, data As Variant, tag As Variant)
-		  #pragma unused sender
-		  
-		  RaiseEvent Process( data, tag )
-		  
 		End Sub
 	#tag EndMethod
 
@@ -115,9 +146,36 @@ Class ThreadPool
 		  wend
 		  
 		  DataQueue.Add tag : data
+		  wasQueueLoaded = true
 		  
 		  if not WakeAThread and ( Jobs <= 0 or Pool.Count < Jobs ) then
 		    AddThreadToPool
+		  end if
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub RaiseFinishedEvent()
+		  RaiseEvent Finished
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub RaiseProcessEvent(data As Variant, tag As Variant)
+		  RaiseEvent Process( data, tag )
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub RaiseQueueDrainedEventTimer_Action(sender As Timer)
+		  #pragma unused sender
+		  
+		  if WasQueueLoaded and not IsClosed and DataQueue.Count = 0 then
+		    WasQueueLoaded = false
+		    RaiseEvent QueueDrained
 		  end if
 		  
 		End Sub
@@ -129,8 +187,10 @@ Class ThreadPool
 		    t.Stop
 		  end if
 		  
-		  RemoveHandler t.Process, AddRessOf PThread_Process
-		  RemoveHandler t.UserInterfaceUpdate, AddressOf PThread_UserInterfaceUpdate
+		  while t.ThreadState <> Thread.ThreadStates.NotRunning
+		  wend
+		  
+		  RemoveHandler t.UserInterfaceUpdate, WeakAddressOf PThread_UserInterfaceUpdate
 		  
 		  for i as integer = 0 to Pool.LastIndex
 		    if Pool( i ) is t then
@@ -144,18 +204,33 @@ Class ThreadPool
 
 	#tag Method, Flags = &h0, Description = 53746F70732070726F63657373696E6720696D6D6564696174656C7920616E6420636C6F7365732074686520546872656164506F6F6C2E
 		Sub Stop()
-		  Close
+		  DataQueue.RemoveAll
 		  
 		  for each t as M_ThreadPool.PThread in Pool
-		    if t.ThreadState <> Thread.ThreadStates.NotRunning then
-		      #pragma BreakOnExceptions false
-		      try
-		        t.Stop
-		      end try
-		      #pragma BreakOnExceptions default
-		    end if
+		    t.IsClosed = true
+		    
+		    #pragma BreakOnExceptions false
+		    select case t.ThreadState
+		    case Thread.ThreadStates.NotRunning
+		      //
+		      // Do nothing
+		      //
+		      
+		    case Thread.ThreadStates.Paused
+		      //
+		      // The resume will end the Thread when there it sees there is no data left
+		      //
+		      t.Resume
+		      
+		    case else
+		      t.Stop
+		    end select
+		    #pragma BreakOnExceptions default
 		  next
 		  
+		  if not IsClosed then
+		    PoolCleaner_Run( nil )
+		  end if
 		  
 		End Sub
 	#tag EndMethod
@@ -192,6 +267,10 @@ Class ThreadPool
 		Event Process(data As Variant, tag As Variant)
 	#tag EndHook
 
+	#tag Hook, Flags = &h0, Description = 52616973656420616674657220746865206C61737420646174612069732072656D6F7665642066726F6D2074686520717565756520616E642074686520546872656164506F6F6C20686173206E6F74206265656E20636C6F7365642E
+		Event QueueDrained()
+	#tag EndHook
+
 	#tag Hook, Flags = &h0, Description = 526169736564207768656E206120546872656164206973737565732041646455736572496E746572666163655570646174652E
 		Event UserInterfaceUpdate(data() As Dictionary)
 	#tag EndHook
@@ -211,6 +290,10 @@ Class ThreadPool
 		Private IsClosed As Boolean
 	#tag EndComputedProperty
 
+	#tag Property, Flags = &h21
+		Private IsDestructing As Boolean
+	#tag EndProperty
+
 	#tag ComputedProperty, Flags = &h0, Description = 52657475726E732054727565207768656E206E6F2054687265616473206172652072756E6E696E672E
 		#tag Getter
 			Get
@@ -223,6 +306,10 @@ Class ThreadPool
 
 	#tag Property, Flags = &h0, Description = 546865206D6178696D756D206E756D626572206F66205468726561647320746F2072756E20617420616E7920676976656E2074696D652E203020697320756E6C696D6974656420736F2061206E6577205468726561642077696C6C2062652073746172746564206966206E6F206578697374696E672054687265616420697320617661696C61626C652E
 		Jobs As Integer = 4
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mWeakRef As WeakRef
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -251,6 +338,27 @@ Class ThreadPool
 
 	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D652E205768656E20616464696E6720616E6F74686572206974656D2C20746869732077696C6C2068616E6720756E74696C2069742063616E2062652070726F6365737365642E0A0A4D757374206265207A65726F2028756E6C696D6974656429206F72206174206C6561737420746865206E756D626572206F66204A6F62732E
 		QueueLimit As Integer = 8
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private RaiseQueueDrainedEventTimer As Timer
+	#tag EndProperty
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return DataQueue.Count
+			End Get
+		#tag EndGetter
+		RemainingInQueue As Integer
+	#tag EndComputedProperty
+
+	#tag Property, Flags = &h0, Description = 5365747320746865207479706573206F662054687265616473206173207468657920617265206C61756E636865642E204368616E67696E67207468697320646F6573206E6F742061666665637420616C72656164792D72756E6E696E6720546872656164732E
+		Type As Thread.Types = Thread.Types.Preemptive
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private WasQueueLoaded As Boolean
 	#tag EndProperty
 
 
@@ -325,6 +433,26 @@ Class ThreadPool
 			Group="Behavior"
 			InitialValue=""
 			Type="Boolean"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="Type"
+			Visible=false
+			Group="Behavior"
+			InitialValue="Thread.Types.Preemptive"
+			Type="Thread.Types"
+			EditorType="Enum"
+			#tag EnumValues
+				"0 - Cooperative"
+				"1 - Preemptive"
+			#tag EndEnumValues
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="RemainingInQueue"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
