@@ -17,6 +17,8 @@ Inherits ThreadPoolTestBase
 		  
 		  System.DebugLog "Processed " + data.StringValue
 		  
+		  Thread.Current.AddUserInterfaceUpdate data : nil
+		  
 		  Result = Result + 1
 		End Sub
 	#tag EndEvent

@@ -164,6 +164,37 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Sub UserInterfaceUpdateTest()
+		  UserInterfaceUpdateTester = new ThreeN1ThreadPool
+		  AddHandler UserInterfaceUpdateTester.UserInterfaceUpdate, WeakAddressOf UserInterfaceUpdateTester_UserInterfaceUpdate
+		  
+		  UserInterfaceUpdateTester.Queue 1
+		  
+		  AsyncAwait 5
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub UserInterfaceUpdateTester_UserInterfaceUpdate(sender As ThreadPool, data() As Dictionary)
+		  #pragma unused sender
+		  
+		  var count as integer = data.Count
+		  Assert.AreEqual 1, count
+		  
+		  var d as Dictionary = data.Pop
+		  Assert.IsTrue d.HasKey( 1 )
+		  
+		  UserInterfaceUpdateTester.Stop
+		  
+		  RemoveHandler UserInterfaceUpdateTester.UserInterfaceUpdate, WeakAddressOf UserInterfaceUpdateTester_UserInterfaceUpdate
+		  UserInterfaceUpdateTester = nil
+		  
+		  AsyncComplete
+		End Sub
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h21
 		Private ExceptionTester As ThreadPool
@@ -179,6 +210,10 @@ Inherits TestGroup
 
 	#tag Property, Flags = &h21
 		Private QueueDrainedTester As ThreeN1ThreadPool
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private UserInterfaceUpdateTester As ThreeN1ThreadPool
 	#tag EndProperty
 
 
