@@ -1,24 +1,11 @@
 #tag Class
-Protected Class ThreadPoolTests
+Protected Class ThreadPoolBaseTests
 Inherits TestGroup
-	#tag Method, Flags = &h0
-		Sub CooperativeTest()
-		  var tp as new ThreeN1ThreadPool
-		  tp.Type = Thread.Types.Cooperative
-		  
-		  Assert.IsTrue tp.TryAdd( 1000 )
-		  Assert.IsTrue tp.TryAdd( 2000 )
-		  
-		  tp.Wait
-		  
-		  Assert.IsTrue tp.IsFinished
-		  Assert.AreEqual 2, tp.Result
-		End Sub
-	#tag EndMethod
-
 	#tag Method, Flags = &h0
 		Sub DestructorTest()
 		  var tp as new ThreeN1ThreadPool
+		  tp.Type = GetType
+		  
 		  tp.QueueLimit = 0
 		  
 		  for i as integer = 1 to 1000
@@ -36,6 +23,8 @@ Inherits TestGroup
 	#tag Method, Flags = &h0
 		Sub FinishedTest()
 		  FinishedTester = new ThreeN1ThreadPool
+		  FinishedTester.Type = GetType
+		  
 		  AddHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
 		  
 		  for i as integer = 1001 to 1010
@@ -64,6 +53,8 @@ Inherits TestGroup
 	#tag Method, Flags = &h0
 		Sub InitializeTest()
 		  var tp as new ThreadPool
+		  tp.Type = GetType
+		  
 		  Assert.IsTrue tp.IsFinished
 		End Sub
 	#tag EndMethod
@@ -71,6 +62,8 @@ Inherits TestGroup
 	#tag Method, Flags = &h0
 		Sub NoQueueLimitTest()
 		  NoQueueLimitTester = new ThreeN1ThreadPool
+		  NoQueueLimitTester.Type = GetType
+		  
 		  NoQueueLimitTester.QueueLimit = 0
 		  
 		  AddHandler NoQueueLimitTester.Finished, AddressOf NoQueueLimitTester_Finished
@@ -106,6 +99,8 @@ Inherits TestGroup
 		  QueueDrainedTestIndex = 1
 		  
 		  QueueDrainedTester = new ThreeN1ThreadPool
+		  QueueDrainedTester.Type = GetType
+		  
 		  QueueDrainedTester.QueueLimit = 2
 		  
 		  AddHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
@@ -158,6 +153,8 @@ Inherits TestGroup
 	#tag Method, Flags = &h0
 		Sub QueueIsFullTest()
 		  var tp as new EndLessThreadPool
+		  tp.Type = GetType
+		  
 		  tp.QueueLimit = 1
 		  tp.Jobs = 1
 		  
@@ -172,6 +169,7 @@ Inherits TestGroup
 	#tag Method, Flags = &h0
 		Sub StopTest()
 		  var stopTester as new EndlessThreadPool
+		  stopTester.Type = GetType
 		  
 		  Assert.IsTrue stopTester.TryAdd( 1 )
 		  
@@ -194,6 +192,8 @@ Inherits TestGroup
 	#tag Method, Flags = &h0
 		Sub UserInterfaceUpdateTest()
 		  UserInterfaceUpdateTester = new ThreeN1ThreadPool
+		  UserInterfaceUpdateTester.Type = GetType
+		  
 		  AddHandler UserInterfaceUpdateTester.UserInterfaceUpdate, WeakAddressOf UserInterfaceUpdateTester_UserInterfaceUpdate
 		  
 		  Assert.IsTrue UserInterfaceUpdateTester.TryAdd( 1 )
@@ -221,6 +221,26 @@ Inherits TestGroup
 		  AsyncComplete
 		End Sub
 	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WaitTest()
+		  var tp as new ThreeN1ThreadPool
+		  tp.Type = GetType
+		  
+		  Assert.IsTrue tp.TryAdd( 1000 )
+		  Assert.IsTrue tp.TryAdd( 2000 )
+		  
+		  tp.Wait
+		  
+		  Assert.IsTrue tp.IsFinished
+		  Assert.AreEqual 2, tp.Result
+		End Sub
+	#tag EndMethod
+
+
+	#tag Hook, Flags = &h0
+		Event GetType() As Thread.Types
+	#tag EndHook
 
 
 	#tag Property, Flags = &h21

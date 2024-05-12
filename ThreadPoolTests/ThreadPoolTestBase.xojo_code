@@ -1,16 +1,6 @@
 #tag Class
 Protected Class ThreadPoolTestBase
 Inherits ThreadPool
-	#tag Method, Flags = &h0
-		Sub Constructor()
-		  // Calling the overridden superclass constructor.
-		  Super.Constructor
-		  
-		  Type = Thread.Types.Cooperative
-		End Sub
-	#tag EndMethod
-
-
 	#tag ViewBehavior
 		#tag ViewProperty
 			Name="Name"
@@ -74,14 +64,6 @@ Inherits ThreadPool
 			Group="Behavior"
 			InitialValue="8"
 			Type="Integer"
-			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="QueueIsFull"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
-			Type="Boolean"
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
