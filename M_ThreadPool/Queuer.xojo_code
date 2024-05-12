@@ -1,15 +1,6 @@
 #tag Class
 Private Class Queuer
 	#tag Method, Flags = &h0
-		Sub Add(data As Pair)
-		  var lock as new Locker( MySemaphore )
-		  self.Data.Add data
-		  lock = nil
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Sub Constructor()
 		  MySemaphore = new Semaphore
 		  
@@ -38,6 +29,23 @@ Private Class Queuer
 		  lock = nil
 		  
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function TryAdd(tag As Variant, data As Variant, limit As Integer) As Boolean
+		  var result as boolean
+		  
+		  var lock as new Locker( MySemaphore )
+		  
+		  if limit <= 0 or self.Data.Count < limit then
+		    self.Data.Add tag : data
+		    result = true
+		  end if
+		  
+		  lock = nil
+		  
+		  return result
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0

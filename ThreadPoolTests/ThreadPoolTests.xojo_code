@@ -6,8 +6,8 @@ Inherits TestGroup
 		  var tp as new ThreeN1ThreadPool
 		  tp.Type = Thread.Types.Cooperative
 		  
-		  tp.Queue 1000
-		  tp.Queue 2000
+		  Assert.IsTrue tp.TryAdd( 1000 )
+		  Assert.IsTrue tp.TryAdd( 2000 )
 		  
 		  tp.Wait
 		  
@@ -22,7 +22,7 @@ Inherits TestGroup
 		  tp.QueueLimit = 0
 		  
 		  for i as integer = 1 to 1000
-		    tp.Queue i
+		    Assert.IsTrue tp.TryAdd( i )
 		  next
 		  
 		  var wr as new WeakRef( tp )
@@ -39,7 +39,7 @@ Inherits TestGroup
 		  AddHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
 		  
 		  for i as integer = 1001 to 1010
-		    FinishedTester.Queue i
+		    Assert.IsTrue FinishedTester.TryAdd( i )
 		  next
 		  
 		  FinishedTester.Close
@@ -80,10 +80,8 @@ Inherits TestGroup
 		  const kEndValue as integer = kStartValue + kCount - 1
 		  
 		  for i as integer = kStartValue to kEndValue
-		    NoQueueLimitTester.Queue i
+		    Assert.IsTrue NoQueueLimitTester.TryAdd( i )
 		  next
-		  
-		  Assert.IsFalse NoQueueLimitTester.QueueIsFull
 		  
 		  NoQueueLimitTester.Wait
 		  Assert.AreEqual kCount, NoQueueLimitTester.Result
@@ -109,7 +107,7 @@ Inherits TestGroup
 		  AddHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
 		  
 		  for i as integer = 1001 to 1010
-		    QueueDrainedTester.Queue i
+		    Assert.IsTrue QueueDrainedTester.TryAdd( i )
 		  next
 		  
 		  AsyncAwait 5
@@ -131,13 +129,14 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h0
 		Sub QueueIsFullTest()
-		  var tp as new ThreeN1ThreadPool
+		  var tp as new EndLessThreadPool
 		  tp.QueueLimit = 1
+		  tp.Jobs = 1
 		  
-		  tp.Queue 100000
-		  tp.Queue 2000000
+		  Assert.IsTrue tp.TryAdd( 100000 )
+		  Assert.IsTrue tp.TryAdd( 300000 )
+		  Assert.IsFalse tp.TryAdd( 2000000 )
 		  
-		  Assert.IsTrue tp.QueueIsFull
 		  
 		End Sub
 	#tag EndMethod
@@ -146,7 +145,7 @@ Inherits TestGroup
 		Sub StopTest()
 		  var stopTester as new EndlessThreadPool
 		  
-		  stopTester.Queue 1
+		  Assert.IsTrue stopTester.TryAdd( 1 )
 		  
 		  Assert.IsFalse StopTester.IsFinished
 		  
@@ -169,7 +168,7 @@ Inherits TestGroup
 		  UserInterfaceUpdateTester = new ThreeN1ThreadPool
 		  AddHandler UserInterfaceUpdateTester.UserInterfaceUpdate, WeakAddressOf UserInterfaceUpdateTester_UserInterfaceUpdate
 		  
-		  UserInterfaceUpdateTester.Queue 1
+		  Assert.IsTrue UserInterfaceUpdateTester.TryAdd( 1 )
 		  
 		  AsyncAwait 5
 		  

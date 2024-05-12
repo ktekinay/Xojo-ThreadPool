@@ -131,30 +131,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 416464732074686520676976656E2060646174616020746F2074686520717565756520666F722070726F63657373696E672E20496620607461676020697320676976656E2C2069742077696C6C2062652072657475726E656420696E2074686520526573756C74417661696C61626C65206576656E742E204966206E6F7420676976656E2C206064617461602077696C6C206265207573656420617320746865207461672E
-		Sub Queue(data As Variant, tag As Variant = Nil)
-		  if IsClosed then
-		    raise new UnsupportedOperationException( "Cannot queue data to a closed ThreadPool until all processes have completed" )
-		  end if
-		  
-		  var awakened as boolean
-		  
-		  while QueueIsFull
-		    if not awakened then
-		      awakened = WakeAThread
-		    end if
-		  wend
-		  
-		  DataQueue.Add tag : data
-		  wasQueueLoaded = true
-		  
-		  if not WakeAThread and ( Jobs <= 0 or Pool.Count < Jobs ) then
-		    AddThreadToPool
-		  end if
-		  
-		End Sub
-	#tag EndMethod
-
 	#tag Method, Flags = &h21
 		Private Sub RaiseFinishedEvent()
 		  RaiseEvent Finished
@@ -233,6 +209,24 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  end if
 		  
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 417474656D70747320746F206164642074686520676976656E2060646174616020616E6420607461676020746F2074686520717565756520666F722070726F63657373696E672E2057696C6C2072657475726E2046616C7365206966207468652071756575652069732066756C6C2E
+		Function TryAdd(data As Variant, tag As Variant = Nil) As Boolean
+		  if IsClosed then
+		    raise new UnsupportedOperationException( "Cannot queue data to a closed ThreadPool until all processes have completed" )
+		  end if
+		  
+		  var added as boolean = DataQueue.TryAdd( tag, data, QueueLimit )
+		  
+		  if added and not WakeAThread and ( Jobs <= 0 or Pool.Count < Jobs ) then
+		    AddThreadToPool
+		  end if
+		  
+		  WasQueueLoaded = WasQueueLoaded or added
+		  
+		  return added
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 5761697420756E74696C20616C6C20746872656164732061726520636F6D706C6574652E20496D706C69657320436C6F73652E
@@ -319,16 +313,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Property, Flags = &h21
 		Private PoolCleaner As Thread
 	#tag EndProperty
-
-	#tag ComputedProperty, Flags = &h0, Description = 546865206D6178696D756D206E756D626572206F66206974656D7320617320646566696E65642062792051756575654C696D6974206172652077616974696E6720696E207468652071756575652E
-		#tag Getter
-			Get
-			  return QueueLimit > 0 and DataQueue.Count >= QueueLimit
-			  
-			End Get
-		#tag EndGetter
-		QueueIsFull As Boolean
-	#tag EndComputedProperty
 
 	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D652E20557365207A65726F20666F7220756E6C696D697465642E
 		QueueLimit As Integer = 8
@@ -419,14 +403,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 			Group="Behavior"
 			InitialValue="8"
 			Type="Integer"
-			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="QueueIsFull"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
-			Type="Boolean"
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
