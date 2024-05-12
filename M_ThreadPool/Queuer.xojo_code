@@ -9,11 +9,11 @@ Private Class Queuer
 
 	#tag Method, Flags = &h0
 		Function Count() As Integer
-		  var lock as new M_ThreadPool.Locker( MySemaphore )
+		  MySemaphore.Signal
 		  
 		  var result as integer = Data.Count
 		  
-		  lock = nil
+		  MySemaphore.Release
 		  
 		  return result
 		  
@@ -22,11 +22,11 @@ Private Class Queuer
 
 	#tag Method, Flags = &h0
 		Sub RemoveAll()
-		  var lock as new M_ThreadPool.Locker( MySemaphore )
+		  MySemaphore.Signal
 		  
 		  Data.RemoveAll
 		  
-		  lock = nil
+		  MySemaphore.Release
 		  
 		End Sub
 	#tag EndMethod
@@ -35,14 +35,14 @@ Private Class Queuer
 		Function TryAdd(tag As Variant, data As Variant, limit As Integer) As Boolean
 		  var result as boolean
 		  
-		  var lock as new Locker( MySemaphore )
+		  MySemaphore.Signal
 		  
 		  if limit <= 0 or self.Data.Count < limit then
 		    self.Data.Add tag : data
 		    result = true
 		  end if
 		  
-		  lock = nil
+		  MySemaphore.Release
 		  
 		  return result
 		End Function
@@ -50,9 +50,9 @@ Private Class Queuer
 
 	#tag Method, Flags = &h0
 		Function TryPop(ByRef data As Pair) As Boolean
-		  var lock as new Locker( MySemaphore )
-		  
 		  var result as boolean
+		  
+		  MySemaphore.Signal
 		  
 		  if self.Data.Count <> 0 then
 		    data = self.Data( 0 )
@@ -60,7 +60,7 @@ Private Class Queuer
 		    result = true
 		  end if
 		  
-		  lock = nil
+		  MySemaphore.Release
 		  
 		  return result
 		End Function
