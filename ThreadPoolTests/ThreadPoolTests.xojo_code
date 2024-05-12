@@ -119,6 +119,8 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h21
 		Private Sub QueueDrainedTester_Finished(sender As ThreadPool)
+		  #pragma unused sender
+		  
 		  Assert.AreEqual 4, QueueDrainedTester.Result, "Result"
 		  Assert.AreEqual 5, QueueDrainedTestIndex, "Index"
 		  
