@@ -103,26 +103,52 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h0
 		Sub QueueDrainedTest()
-		  QueueDrainedTester = new ThreeN1ThreadPool
-		  AddHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
+		  QueueDrainedTestIndex = 1
 		  
-		  for i as integer = 1001 to 1010
-		    Assert.IsTrue QueueDrainedTester.TryAdd( i )
-		  next
+		  QueueDrainedTester = new ThreeN1ThreadPool
+		  QueueDrainedTester.QueueLimit = 2
+		  
+		  AddHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
+		  AddHandler QueueDrainedTester.Finished, AddressOf QueueDrainedTester_Finished
+		  
+		  QueueDrainedTestFeeder
 		  
 		  AsyncAwait 5
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub QueueDrainedTester_QueueDrained(sender As ThreadPool)
-		  Assert.IsFalse sender.IsFinished
-		  Assert.AreEqual 10, QueueDrainedTester.Result
+		Private Sub QueueDrainedTester_Finished(sender As ThreadPool)
+		  Assert.AreEqual 4, QueueDrainedTester.Result, "Result"
+		  Assert.AreEqual 5, QueueDrainedTestIndex, "Index"
 		  
 		  RemoveHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
+		  RemoveHandler QueueDrainedTester.Finished, AddressOf QueueDrainedTester_Finished
+		  
 		  QueueDrainedTester = nil
 		  
 		  AsyncComplete
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub QueueDrainedTester_QueueDrained(sender As ThreadPool)
+		  Assert.IsFalse sender.IsFinished
+		  QueueDrainedTestFeeder
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub QueueDrainedTestFeeder()
+		  while QueueDrainedTester.TryAdd( QueueDrainedTestIndex )
+		    QueueDrainedTestIndex = QueueDrainedTestIndex + 1
+		    if QueueDrainedTestIndex > 4 then
+		      QueueDrainedTester.Close
+		      exit
+		    end if
+		  wend
 		  
 		End Sub
 	#tag EndMethod
@@ -209,6 +235,10 @@ Inherits TestGroup
 
 	#tag Property, Flags = &h21
 		Private QueueDrainedTester As ThreeN1ThreadPool
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private QueueDrainedTestIndex As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
