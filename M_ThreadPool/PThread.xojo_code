@@ -33,6 +33,8 @@ Inherits Thread
 		      continue
 		    end if
 		    
+		    Type = host.Type
+		    
 		    var tag as variant = item.Left
 		    var data as variant = item.Right
 		    
