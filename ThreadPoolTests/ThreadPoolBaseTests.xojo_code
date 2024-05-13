@@ -2,6 +2,24 @@
 Protected Class ThreadPoolBaseTests
 Inherits TestGroup
 	#tag Method, Flags = &h0
+		Sub AddTest()
+		  var tp as new ThreeN1ThreadPool( CurrentMethodName )
+		  tp.Type = GetType
+		  
+		  tp.QueueLimit = 2
+		  tp.Jobs = 1
+		  
+		  for i as integer = 1051 to 1060
+		    tp.Add i
+		  next
+		  
+		  tp.Wait
+		  
+		  Assert.AreEqual 10, tp.Result
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub DestructorTest()
 		  var tp as new ThreeN1ThreadPool( CurrentMethodName )
 		  tp.Type = GetType

@@ -1,6 +1,18 @@
 #tag Class
 Class ThreadPool
 Implements M_ThreadPool.ThreadPoolInterface
+	#tag Method, Flags = &h0, Description = 416464206461746120746F207468652071756575652E204966207468652071756575652069732066756C6C2C20746869732077696C6C20706175736520756E74696C20616E20736C6F7420697320617661696C61626C652E205573652054727941646420696E737465616420776865726520706F737369626C652E
+		Sub Add(data As Variant, tag As Variant = Nil)
+		  while not TryAdd( data, tag )
+		    #if DebugBuild
+		      System.DebugLog "Queue is full, trying again"
+		    #endif
+		    Thread.SleepCurrent 5
+		  wend
+		  
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h21
 		Private Sub AddThreadToPool()
 		  var t as new M_ThreadPool.PThread
