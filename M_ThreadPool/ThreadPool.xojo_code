@@ -15,27 +15,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, Description = 43616C6C207468697320746F20696E6469636174652074686174206E6F206D6F726520646174612077696C6C20626520616464656420746F2074686520717565756520666F722070726F63657373696E672E
-		Sub Close()
-		  if IsClosed or Pool.Count = 0 then
-		    return
-		  end if
-		  
-		  for each t as M_ThreadPool.PThread in Pool
-		    t.IsClosed = true
-		    if t.ThreadState = Thread.ThreadStates.Paused then
-		      t.Resume
-		    end if
-		  next
-		  
-		  PoolCleaner = new Thread
-		  AddHandler PoolCleaner.Run, AddressOf PoolCleaner_Run
-		  
-		  PoolCleaner.Start
-		  
-		End Sub
-	#tag EndMethod
-
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  DataQueue = new M_ThreadPool.Queuer
@@ -62,6 +41,27 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  do
 		  loop until Pool.Count = 0
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0, Description = 43616C6C207468697320746F20696E6469636174652074686174206E6F206D6F726520646174612077696C6C20626520616464656420746F2074686520717565756520666F722070726F63657373696E672E
+		Sub Finish()
+		  if IsClosed or Pool.Count = 0 then
+		    return
+		  end if
+		  
+		  for each t as M_ThreadPool.PThread in Pool
+		    t.IsClosed = true
+		    if t.ThreadState = Thread.ThreadStates.Paused then
+		      t.Resume
+		    end if
+		  next
+		  
+		  PoolCleaner = new Thread
+		  AddHandler PoolCleaner.Run, AddressOf PoolCleaner_Run
+		  
+		  PoolCleaner.Start
 		  
 		End Sub
 	#tag EndMethod
@@ -231,7 +231,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h0, Description = 5761697420756E74696C20616C6C20746872656164732061726520636F6D706C6574652E20496D706C69657320436C6F73652E
 		Sub Wait()
-		  Close
+		  Finish
 		  
 		  while not IsFinished
 		  wend

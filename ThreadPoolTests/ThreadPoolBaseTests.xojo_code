@@ -31,7 +31,7 @@ Inherits TestGroup
 		    Assert.IsTrue FinishedTester.TryAdd( i )
 		  next
 		  
-		  FinishedTester.Close
+		  FinishedTester.Finish
 		  
 		  AsyncAwait 5
 		End Sub
@@ -142,7 +142,7 @@ Inherits TestGroup
 		  while QueueDrainedTester.TryAdd( QueueDrainedTestIndex )
 		    QueueDrainedTestIndex = QueueDrainedTestIndex + 1
 		    if QueueDrainedTestIndex > 4 then
-		      QueueDrainedTester.Close
+		      QueueDrainedTester.Finish
 		      exit
 		    end if
 		  wend
