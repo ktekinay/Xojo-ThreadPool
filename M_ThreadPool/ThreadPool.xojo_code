@@ -214,7 +214,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h0, Description = 417474656D70747320746F206164642074686520676976656E2060646174616020616E6420607461676020746F2074686520717565756520666F722070726F63657373696E672E2057696C6C2072657475726E2046616C7365206966207468652071756575652069732066756C6C2E
 		Function TryAdd(data As Variant, tag As Variant = Nil) As Boolean
 		  if IsClosed then
-		    raise new UnsupportedOperationException( "Cannot queue data to a closed ThreadPool until all processes have completed" )
+		    raise new UnsupportedOperationException( "Cannot queue data after calling Finish until all processes have completed" )
 		  end if
 		  
 		  var added as boolean = DataQueue.TryAdd( tag, data, QueueLimit )
