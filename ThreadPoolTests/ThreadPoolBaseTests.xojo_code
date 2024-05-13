@@ -3,7 +3,7 @@ Protected Class ThreadPoolBaseTests
 Inherits TestGroup
 	#tag Method, Flags = &h0
 		Sub DestructorTest()
-		  var tp as new ThreeN1ThreadPool
+		  var tp as new ThreeN1ThreadPool( CurrentMethodName )
 		  tp.Type = GetType
 		  
 		  tp.QueueLimit = 0
@@ -16,13 +16,91 @@ Inherits TestGroup
 		  
 		  tp = nil
 		  
+		  var start as integer = System.Ticks
+		  while ( System.Ticks - start ) < 60 and wr.Value isa object
+		  wend
+		  
 		  Assert.IsNil wr.Value
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub EventsTest()
+		  EventsTestIndex = 1
+		  
+		  EventsTester = new ThreeN1ThreadPool( CurrentMethodName )
+		  EventsTester.Type = GetType
+		  
+		  EventsTester.Jobs = 1
+		  EventsTester.QueueLimit = 4
+		  
+		  AddHandler EventsTester.QueueAvailable, AddressOf EventsTester_QueueAvailable
+		  AddHandler EventsTester.QueueDrained, AddressOf EventsTester_QueueDrained
+		  AddHandler EventsTester.Finished, AddressOf EventsTester_Finished
+		  
+		  EventsTestFeeder
+		  
+		  AsyncAwait 5
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub EventsTester_Finished(sender As ThreadPool)
+		  #pragma unused sender
+		  
+		  Assert.AreEqual 10, EventsTester.Result, "Result"
+		  Assert.AreEqual 11, EventsTestIndex, "Index"
+		  
+		  RemoveHandler EventsTester.QueueAvailable, AddressOf EventsTester_QueueAvailable
+		  RemoveHandler EventsTester.QueueDrained, AddressOf EventsTester_QueueDrained
+		  RemoveHandler EventsTester.Finished, AddressOf EventsTester_Finished
+		  
+		  EventsTester = nil
+		  
+		  AsyncComplete
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub EventsTester_QueueAvailable(sender As ThreadPool)
+		  Assert.IsFalse sender.IsFinished
+		  EventsTestFeeder
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub EventsTester_QueueDrained(sender As ThreadPool)
+		  Assert.IsFalse sender.IsFinished
+		  EventsTester.Finish
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub EventsTestFeeder()
+		  if EventsTestIndex > 10 then
+		    Assert.Message "Queue is full, skipping feeder"
+		    return
+		  end if
+		  
+		  Assert.Message "Starting feeder (Queue has " + EventsTester.RemainingInQueue.ToString + " remaining)"
+		  
+		  while EventsTester.TryAdd( EventsTestIndex * 100000 )
+		    Assert.Message "Added " + EventsTestIndex.ToString
+		    
+		    EventsTestIndex = EventsTestIndex + 1
+		    if EventsTestIndex > 10 then
+		      exit
+		    end if
+		  wend
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub FinishedTest()
-		  FinishedTester = new ThreeN1ThreadPool
+		  FinishedTester = new ThreeN1ThreadPool( CurrentMethodName )
 		  FinishedTester.Type = GetType
 		  
 		  AddHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
@@ -61,7 +139,7 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h0
 		Sub NoQueueLimitTest()
-		  NoQueueLimitTester = new ThreeN1ThreadPool
+		  NoQueueLimitTester = new ThreeN1ThreadPool( CurrentMethodName )
 		  NoQueueLimitTester.Type = GetType
 		  
 		  NoQueueLimitTester.QueueLimit = 0
@@ -95,80 +173,29 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub QueueDrainedTest()
-		  QueueDrainedTestIndex = 1
-		  
-		  QueueDrainedTester = new ThreeN1ThreadPool
-		  QueueDrainedTester.Type = GetType
-		  
-		  QueueDrainedTester.QueueLimit = 2
-		  
-		  AddHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
-		  AddHandler QueueDrainedTester.Finished, AddressOf QueueDrainedTester_Finished
-		  
-		  QueueDrainedTestFeeder
-		  
-		  AsyncAwait 5
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub QueueDrainedTester_Finished(sender As ThreadPool)
-		  #pragma unused sender
-		  
-		  Assert.AreEqual 4, QueueDrainedTester.Result, "Result"
-		  Assert.AreEqual 5, QueueDrainedTestIndex, "Index"
-		  
-		  RemoveHandler QueueDrainedTester.QueueDrained, AddressOf QueueDrainedTester_QueueDrained
-		  RemoveHandler QueueDrainedTester.Finished, AddressOf QueueDrainedTester_Finished
-		  
-		  QueueDrainedTester = nil
-		  
-		  AsyncComplete
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub QueueDrainedTester_QueueDrained(sender As ThreadPool)
-		  Assert.IsFalse sender.IsFinished
-		  QueueDrainedTestFeeder
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub QueueDrainedTestFeeder()
-		  while QueueDrainedTester.TryAdd( QueueDrainedTestIndex )
-		    QueueDrainedTestIndex = QueueDrainedTestIndex + 1
-		    if QueueDrainedTestIndex > 4 then
-		      QueueDrainedTester.Finish
-		      exit
-		    end if
-		  wend
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Sub QueueIsFullTest()
-		  var tp as new EndLessThreadPool
+		  var tp as new EndLessThreadPool( CurrentMethodName )
+		  
 		  tp.Type = GetType
 		  
 		  tp.QueueLimit = 1
 		  tp.Jobs = 1
 		  
+		  Assert.IsFalse tp.IsQueueFull
+		  
 		  Assert.IsTrue tp.TryAdd( 100000 )
 		  Assert.IsTrue tp.TryAdd( 300000 )
 		  Assert.IsFalse tp.TryAdd( 2000000 )
 		  
+		  Assert.IsTrue tp.IsQueueFull
 		  
+		  tp.Stop
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub StopTest()
-		  var stopTester as new EndlessThreadPool
+		  var stopTester as new EndlessThreadPool( CurrentMethodName )
 		  stopTester.Type = GetType
 		  
 		  Assert.IsTrue stopTester.TryAdd( 1 )
@@ -191,7 +218,7 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h0
 		Sub UserInterfaceUpdateTest()
-		  UserInterfaceUpdateTester = new ThreeN1ThreadPool
+		  UserInterfaceUpdateTester = new ThreeN1ThreadPool( CurrentMethodName )
 		  UserInterfaceUpdateTester.Type = GetType
 		  
 		  AddHandler UserInterfaceUpdateTester.UserInterfaceUpdate, WeakAddressOf UserInterfaceUpdateTester_UserInterfaceUpdate
@@ -224,7 +251,7 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h0
 		Sub WaitTest()
-		  var tp as new ThreeN1ThreadPool
+		  var tp as new ThreeN1ThreadPool( CurrentMethodName )
 		  tp.Type = GetType
 		  
 		  Assert.IsTrue tp.TryAdd( 1000 )
@@ -244,6 +271,14 @@ Inherits TestGroup
 
 
 	#tag Property, Flags = &h21
+		Private EventsTester As ThreeN1ThreadPool
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private EventsTestIndex As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
 		Private ExceptionTester As ThreadPool
 	#tag EndProperty
 
@@ -253,14 +288,6 @@ Inherits TestGroup
 
 	#tag Property, Flags = &h21
 		Private NoQueueLimitTester As ThreeN1ThreadPool
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private QueueDrainedTester As ThreeN1ThreadPool
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private QueueDrainedTestIndex As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

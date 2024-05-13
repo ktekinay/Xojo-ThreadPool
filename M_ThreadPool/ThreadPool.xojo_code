@@ -19,9 +19,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Sub Constructor()
 		  DataQueue = new M_ThreadPool.Queuer
 		  
-		  RaiseQueueDrainedEventTimer = new Timer
-		  RaiseQueueDrainedEventTimer.Period = 1
-		  AddHandler RaiseQueueDrainedEventTimer.Action, WeakAddressOf RaiseQueueDrainedEventTimer_Action
+		  RaiseQueueEventsTimer = new Timer
+		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
+		  
+		  RaiseQueueEventsTimer.Period = 10
 		  
 		End Sub
 	#tag EndMethod
@@ -35,9 +36,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  IsDestructing = true
 		  Stop
 		  
-		  RaiseQueueDrainedEventTimer.RunMode = Timer.RunModes.Off
-		  RemoveHandler RaiseQueueDrainedEventTimer.Action, WeakAddressOf RaiseQueueDrainedEventTimer_Action
-		  RaiseQueueDrainedEventTimer = nil
+		  RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off
+		  RemoveHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
+		  RaiseQueueEventsTimer = nil
 		  
 		  do
 		  loop until Pool.Count = 0
@@ -68,13 +69,18 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Function GetNextItem(ByRef item As Pair) As Boolean
+		  var result as boolean
+		  
 		  if DataQueue.TryPop( item ) then
-		    return true
+		    result = true
 		  end if
 		  
-		  if not IsClosed and not IsDestructing then
-		    RaiseQueueDrainedEventTimer.RunMode = Timer.RunModes.Single
+		  if not IsClosed and not IsDestructing and RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off then
+		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Single
 		  end if
+		  
+		  return result
+		  
 		End Function
 	#tag EndMethod
 
@@ -146,10 +152,19 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub RaiseQueueDrainedEventTimer_Action(sender As Timer)
+		Private Sub RaiseQueueEventsTimer_Action(sender As Timer)
 		  #pragma unused sender
 		  
-		  if WasQueueLoaded and not IsClosed and DataQueue.Count = 0 then
+		  if IsClosed or IsDestructing then
+		    return
+		  end if
+		  
+		  if WasFull and not IsQueueFull then
+		    WasFull = false
+		    RaiseEvent QueueAvailable
+		  end if
+		  
+		  if WasQueueLoaded and DataQueue.Count = 0 then
 		    WasQueueLoaded = false
 		    RaiseEvent QueueDrained
 		  end if
@@ -218,6 +233,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  end if
 		  
 		  var added as boolean = DataQueue.TryAdd( tag, data, QueueLimit )
+		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
 		  
 		  if added and not WakeAThread and ( Jobs <= 0 or Pool.Count < Jobs ) then
 		    AddThreadToPool
@@ -261,6 +277,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Event Process(data As Variant, tag As Variant)
 	#tag EndHook
 
+	#tag Hook, Flags = &h0, Description = 416674657220686176696E672066696C6C6564207468652071756575652C206120736C6F7420686173206265636F6D6520617661696C61626C6520666F72206D6F726520646174612E
+		Event QueueAvailable()
+	#tag EndHook
+
 	#tag Hook, Flags = &h0, Description = 52616973656420616674657220746865206C61737420646174612069732072656D6F7665642066726F6D2074686520717565756520616E642074686520546872656164506F6F6C20686173206E6F74206265656E20636C6F7365642E
 		Event QueueDrained()
 	#tag EndHook
@@ -298,6 +318,16 @@ Implements M_ThreadPool.ThreadPoolInterface
 		IsFinished As Boolean
 	#tag EndComputedProperty
 
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return QueueLimit > 0 and DataQueue.Count >= QueueLimit
+			  
+			End Get
+		#tag EndGetter
+		IsQueueFull As Boolean
+	#tag EndComputedProperty
+
 	#tag Property, Flags = &h0, Description = 546865206D6178696D756D206E756D626572206F66205468726561647320746F2072756E20617420616E7920676976656E2074696D652E203020697320756E6C696D6974656420736F2061206E6577205468726561642077696C6C2062652073746172746564206966206E6F206578697374696E672054687265616420697320617661696C61626C652E
 		Jobs As Integer = 4
 	#tag EndProperty
@@ -319,7 +349,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private RaiseQueueDrainedEventTimer As Timer
+		Private RaiseQueueEventsTimer As Timer
 	#tag EndProperty
 
 	#tag ComputedProperty, Flags = &h0, Description = 546865206E756D626572206F66206974656D732077616974696E6720746F2062652070726F6365737365642E
@@ -333,6 +363,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Property, Flags = &h0, Description = 5365747320746865207479706573206F662054687265616473206173207468657920617265206C61756E636865642E204368616E67696E67207468697320646F6573206E6F742061666665637420616C72656164792D72756E6E696E6720546872656164732E
 		Type As Thread.Types = Thread.Types.Preemptive
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private WasFull As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -423,6 +457,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 			Group="Behavior"
 			InitialValue=""
 			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="IsQueueFull"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Boolean"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior

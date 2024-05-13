@@ -5,6 +5,8 @@ Inherits ThreadPoolTestBase
 		Sub Process(data As Variant, tag As Variant)
 		  #pragma unused tag
 		  
+		  var start as double = System.Microseconds
+		  
 		  var value as integer = data.IntegerValue
 		  
 		  while value <> 1
@@ -13,6 +15,9 @@ Inherits ThreadPoolTestBase
 		    else
 		      value = 3 * value + 1
 		    end if
+		  wend
+		  
+		  while ( System.Microseconds - start ) < 20000
 		  wend
 		  
 		  System.DebugLog "Processed " + data.StringValue
@@ -112,14 +117,6 @@ Inherits ThreadPoolTestBase
 			Group="Behavior"
 			InitialValue="8"
 			Type="Integer"
-			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="QueueIsFull"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
-			Type="Boolean"
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty

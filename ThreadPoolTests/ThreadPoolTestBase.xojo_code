@@ -1,6 +1,22 @@
 #tag Class
 Protected Class ThreadPoolTestBase
 Inherits ThreadPool
+	#tag Method, Flags = &h0
+		Sub Constructor(testName As String)
+		  // Calling the overridden superclass constructor.
+		  Super.Constructor
+		  
+		  self.TestName = testName
+		  
+		End Sub
+	#tag EndMethod
+
+
+	#tag Property, Flags = &h0
+		TestName As String
+	#tag EndProperty
+
+
 	#tag ViewBehavior
 		#tag ViewProperty
 			Name="Name"
