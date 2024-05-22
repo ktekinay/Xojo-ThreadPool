@@ -30,6 +30,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  DataQueue = new M_ThreadPool.Queuer
+		  Pool = new M_ThreadPool.ThreadSafeVariantArray
 		  
 		  RaiseQueueEventsTimer = new Timer
 		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
@@ -64,7 +65,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    return
 		  end if
 		  
-		  for each t as M_ThreadPool.PThread in Pool
+		  for i as integer = 0 to Pool.LastIndex
+		    var t as M_ThreadPool.PThread = Pool( i )
+		    
 		    t.IsClosed = true
 		    if t.ThreadState = Thread.ThreadStates.Paused then
 		      t.Resume
@@ -209,7 +212,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Sub Stop()
 		  DataQueue.RemoveAll
 		  
-		  for each t as M_ThreadPool.PThread in Pool
+		  for i as integer = 0 to Pool.LastIndex
+		    var t as M_ThreadPool.PThread = Pool( i )
+		    
 		    t.IsClosed = true
 		    
 		    #pragma BreakOnExceptions false
@@ -269,7 +274,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Function WakeAThread() As Boolean
-		  for each t as M_ThreadPool.PThread in Pool
+		  for i as integer = 0 to Pool.LastIndex
+		    var t as M_ThreadPool.PThread = Pool( i )
+		    
 		    if t.ThreadState = Thread.ThreadStates.Paused then
 		      t.Resume
 		      return true
@@ -349,7 +356,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private Pool() As M_ThreadPool.PThread
+		Private Pool As ThreadSafeVariantArray
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

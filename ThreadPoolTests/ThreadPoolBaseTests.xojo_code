@@ -223,7 +223,8 @@ Inherits TestGroup
 		  Assert.IsFalse StopTester.IsFinished
 		  
 		  var spy as new ObjectSpy( stopTester )
-		  var pool() as object = spy.Pool
+		  var pool as new ObjectSpy( spy.Pool )
+		  
 		  var count as integer = pool.Count
 		  Assert.AreEqual 1, count
 		  

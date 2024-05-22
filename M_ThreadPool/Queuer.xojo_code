@@ -1,36 +1,6 @@
 #tag Class
 Private Class Queuer
-	#tag Method, Flags = &h0
-		Sub Constructor()
-		  MySemaphore = new Semaphore
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Function Count() As Integer
-		  MySemaphore.Signal
-		  
-		  var result as integer = Data.Count
-		  
-		  MySemaphore.Release
-		  
-		  return result
-		  
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub RemoveAll()
-		  MySemaphore.Signal
-		  
-		  Data.RemoveAll
-		  
-		  MySemaphore.Release
-		  
-		End Sub
-	#tag EndMethod
-
+Inherits ThreadSafeVariantArray
 	#tag Method, Flags = &h0
 		Function TryAdd(tag As Variant, data As Variant, limit As Integer) As Boolean
 		  var result as boolean
@@ -65,15 +35,6 @@ Private Class Queuer
 		  return result
 		End Function
 	#tag EndMethod
-
-
-	#tag Property, Flags = &h21
-		Private Data() As Pair
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private MySemaphore As Semaphore
-	#tag EndProperty
 
 
 	#tag ViewBehavior
