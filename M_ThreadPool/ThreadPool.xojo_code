@@ -29,7 +29,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h0
 		Sub Constructor()
-		  DataQueue = new M_ThreadPool.ThreadSafeVariantArray
+		  DataQueue = new M_ThreadPool.Queuer
 		  
 		  RaiseQueueEventsTimer = new Timer
 		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
@@ -303,7 +303,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 
 	#tag Property, Flags = &h21
-		Private DataQueue As M_ThreadPool.ThreadSafeVariantArray
+		Private DataQueue As M_ThreadPool.Queuer
 	#tag EndProperty
 
 	#tag ComputedProperty, Flags = &h21
