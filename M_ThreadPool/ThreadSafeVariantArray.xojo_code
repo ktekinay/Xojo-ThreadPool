@@ -1,5 +1,5 @@
 #tag Class
-Private Class Queuer
+Private Class ThreadSafeVariantArray
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  MySemaphore = new Semaphore
