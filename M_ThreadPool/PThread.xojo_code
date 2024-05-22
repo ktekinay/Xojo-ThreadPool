@@ -38,7 +38,7 @@ Inherits Thread
 		    var tag as variant = item.Left
 		    var data as variant = item.Right
 		    
-		    ThreadPoolInterface( host ).RaiseProcessEvent( data, tag )
+		    ThreadPoolInterface( host ).RaiseProcessEvent( data, tag, self )
 		  loop
 		  
 		End Sub

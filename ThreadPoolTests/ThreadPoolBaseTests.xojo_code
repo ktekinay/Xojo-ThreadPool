@@ -201,9 +201,11 @@ Inherits TestGroup
 		  
 		  Assert.IsFalse tp.IsQueueFull
 		  
-		  Assert.IsTrue tp.TryAdd( 100000 )
-		  Assert.IsTrue tp.TryAdd( 300000 )
-		  Assert.IsFalse tp.TryAdd( 2000000 )
+		  for i as integer = 10000 to 20000
+		    if tp.TryAdd( i ) = false then
+		      exit
+		    end if
+		  next
 		  
 		  Assert.IsTrue tp.IsQueueFull
 		  

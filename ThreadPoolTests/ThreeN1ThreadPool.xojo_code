@@ -2,7 +2,7 @@
 Protected Class ThreeN1ThreadPool
 Inherits ThreadPoolTestBase
 	#tag Event , Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Sub Process(data As Variant, tag As Variant)
+		Sub Process(data As Variant, tag As Variant, currentThread As Thread)
 		  #pragma unused tag
 		  
 		  var start as double = System.Microseconds
@@ -22,7 +22,7 @@ Inherits ThreadPoolTestBase
 		  
 		  System.DebugLog "Processed " + data.StringValue
 		  
-		  Thread.Current.AddUserInterfaceUpdate data : nil
+		  currentThread.AddUserInterfaceUpdate data : nil
 		  
 		  Result = Result + 1
 		End Sub
@@ -35,6 +35,22 @@ Inherits ThreadPoolTestBase
 
 
 	#tag ViewBehavior
+		#tag ViewProperty
+			Name="IsQueueFull"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Boolean"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="TestName"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Type"
 			Visible=false

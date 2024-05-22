@@ -157,8 +157,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub RaiseProcessEvent(data As Variant, tag As Variant)
-		  RaiseEvent Process( data, tag )
+		Private Sub RaiseProcessEvent(data As Variant, tag As Variant, sender As Thread)
+		  RaiseEvent Process( data, tag, sender )
 		  
 		End Sub
 	#tag EndMethod
@@ -286,7 +286,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndHook
 
 	#tag Hook, Flags = &h0, Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Event Process(data As Variant, tag As Variant)
+		Event Process(data As Variant, tag As Variant, currentThread As Thread)
 	#tag EndHook
 
 	#tag Hook, Flags = &h0, Description = 416674657220686176696E672066696C6C6564207468652071756575652C206120736C6F7420686173206265636F6D6520617661696C61626C6520666F72206D6F726520646174612E
