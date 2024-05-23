@@ -1,5 +1,6 @@
 #tag Class
 Private Class ThreadSafeVariantArray
+Implements Iterable
 	#tag Method, Flags = &h0
 		Sub Add(item As Variant)
 		  MySemaphore.Signal
@@ -16,6 +17,24 @@ Private Class ThreadSafeVariantArray
 		  MySemaphore = new Semaphore
 		  
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Attributes( Hidden )  Function Iterator() As Iterator
+		  MySemaphore.Signal
+		  
+		  var newArr() as variant
+		  newArr.ResizeTo Data.LastIndex
+		  
+		  for i as integer = 0 to Data.LastIndex
+		    newArr( i ) = Data( i )
+		  next
+		  
+		  MySemaphore.Release
+		  
+		  return new M_ThreadPool.ThreadSafeVariantArrayIterator( newArr )
+		  
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -181,6 +200,22 @@ Private Class ThreadSafeVariantArray
 			Visible=true
 			Group="Position"
 			InitialValue="0"
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="Count"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="LastIndex"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
 			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty

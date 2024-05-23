@@ -65,9 +65,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    return
 		  end if
 		  
-		  for i as integer = 0 to Pool.LastIndex
-		    var t as M_ThreadPool.PThread = Pool( i )
-		    
+		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
 		    if t.ThreadState = Thread.ThreadStates.Paused then
 		      t.Resume
@@ -212,9 +210,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Sub Stop()
 		  DataQueue.RemoveAll
 		  
-		  for i as integer = 0 to Pool.LastIndex
-		    var t as M_ThreadPool.PThread = Pool( i )
-		    
+		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
 		    
 		    #pragma BreakOnExceptions false
@@ -274,9 +270,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Function WakeAThread() As Boolean
-		  for i as integer = 0 to Pool.LastIndex
-		    var t as M_ThreadPool.PThread = Pool( i )
-		    
+		  for each t as M_ThreadPool.PThread in Pool
 		    if t.ThreadState = Thread.ThreadStates.Paused then
 		      t.Resume
 		      return true
