@@ -19,7 +19,7 @@ Inherits ThreadSafeVariantArray
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function TryPop(ByRef data As Pair) As Boolean
+		Function TrySkim(ByRef data As Pair) As Boolean
 		  var result as boolean
 		  
 		  MySemaphore.Signal

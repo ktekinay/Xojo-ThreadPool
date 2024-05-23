@@ -84,7 +84,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Private Function GetNextItem(ByRef item As Pair) As Boolean
 		  var result as boolean
 		  
-		  if DataQueue.TryPop( item ) then
+		  if DataQueue.TrySkim( item ) then
 		    result = true
 		  end if
 		  
