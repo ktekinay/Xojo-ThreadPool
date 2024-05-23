@@ -14,6 +14,7 @@ Inherits TestController
 		  group = new ThreadPoolPreemptiveTests( self, "Preemptive ThreadPool" )
 		  group.IncludeGroup = false
 		  
+		  group = new ThreadSafeVariantArrayTests( self, "ThreadSafeVariantArray")
 		  
 		End Sub
 	#tag EndEvent

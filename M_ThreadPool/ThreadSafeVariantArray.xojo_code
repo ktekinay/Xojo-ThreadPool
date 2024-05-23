@@ -1,5 +1,5 @@
 #tag Class
-Private Class ThreadSafeVariantArray
+Class ThreadSafeVariantArray
 Implements Iterable
 	#tag Method, Flags = &h0
 		Sub Add(item As Variant)
@@ -13,10 +13,41 @@ Implements Iterable
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub AddAt(index As Integer, item As Variant)
+		  MySemaphore.Signal
+		  
+		  Data.AddAt( index, item )
+		  
+		  MySemaphore.Release
+		  
+		  Exception err as RuntimeException
+		    try
+		      MySemaphore.Release
+		    end try
+		    
+		    raise err
+		    
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub Constructor()
 		  MySemaphore = new Semaphore
 		  
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function IndexOf(item As Variant) As Integer
+		  MySemaphore.Signal
+		  
+		  var result as integer = Data.IndexOf( item )
+		  
+		  MySemaphore.Release
+		  
+		  return result
+		  
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -35,6 +66,37 @@ Implements Iterable
 		  return new M_ThreadPool.ThreadSafeVariantArrayIterator( newArr )
 		  
 		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Attributes( Hidden )  Function Operator_Convert() As Variant()
+		  MySemaphore.Signal
+		  
+		  var result() as variant
+		  result.ResizeTo Data.LastIndex
+		  
+		  for i as integer = 0 to Data.LastIndex
+		    result( i ) = Data( i )
+		  next
+		  
+		  MySemaphore.Release
+		  
+		  return result
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Attributes( Hidden )  Sub Operator_Convert(source() As Variant)
+		  Constructor
+		  
+		  Data.ResizeTo source.LastIndex
+		  
+		  for i as integer = 0 to source.LastIndex
+		    Data( i ) = source( i )
+		  next
+		  
+		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -108,7 +170,7 @@ Implements Iterable
 		Sub RemoveAt(index As Integer)
 		  MySemaphore.Signal
 		  
-		  self.Data.RemoveAt( index )
+		  Data.RemoveAt( index )
 		  
 		  MySemaphore.Release
 		  
@@ -121,6 +183,54 @@ Implements Iterable
 		    
 		End Sub
 	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub ResizeTo(newSize As Integer)
+		  if newSize < -1 then
+		    raise new OutOfBoundsException
+		  end if
+		  
+		  MySemaphore.Signal
+		  
+		  Data.ResizeTo newSize
+		  
+		  MySemaphore.Release
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub Shuffle()
+		  MySemaphore.Signal
+		  
+		  Data.Shuffle
+		  
+		  MySemaphore.Release
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub Sort(sorter As SortDelegate)
+		  MySemaphore.Signal
+		  
+		  Data.Sort sorter
+		  
+		  MySemaphore.Release
+		  
+		  Exception err As RuntimeException
+		    try
+		      MySemaphore.Release
+		    end try
+		    
+		    raise err
+		    
+		End Sub
+	#tag EndMethod
+
+	#tag DelegateDeclaration, Flags = &h21
+		Private Delegate Function SortDelegate(item1 As Variant, item2 As Variant) As Integer
+	#tag EndDelegateDeclaration
 
 
 	#tag ComputedProperty, Flags = &h0
@@ -160,6 +270,10 @@ Implements Iterable
 	#tag Property, Flags = &h1
 		Protected MySemaphore As Semaphore
 	#tag EndProperty
+
+
+	#tag Constant, Name = FirstIndex, Type = Double, Dynamic = False, Default = \"0", Scope = Public
+	#tag EndConstant
 
 
 	#tag ViewBehavior
