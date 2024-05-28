@@ -1,7 +1,7 @@
 #tag Interface
 Private Interface ThreadPoolInterface
 	#tag Method, Flags = &h0
-		Function GetNextItem(ByRef item As Pair) As Boolean
+		Function GetNextItem(ByRef data As Variant) As Boolean
 		  
 		End Function
 	#tag EndMethod
@@ -13,7 +13,7 @@ Private Interface ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub RaiseProcessEvent(data As Variant, tag As Variant, sender As Thread)
+		Sub RaiseProcessEvent(data As Variant, sender As Thread)
 		  
 		End Sub
 	#tag EndMethod

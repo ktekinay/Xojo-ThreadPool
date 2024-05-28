@@ -18,8 +18,8 @@ Inherits Thread
 		      exit
 		    end if
 		    
-		    var item as pair
-		    if not ThreadPoolInterface( host ).GetNextItem( item ) then
+		    var data as variant
+		    if not ThreadPoolInterface( host ).GetNextItem( data ) then
 		      if IsClosed then
 		        exit
 		      end if
@@ -35,10 +35,7 @@ Inherits Thread
 		    
 		    Type = host.Type
 		    
-		    var tag as variant = item.Left
-		    var data as variant = item.Right
-		    
-		    ThreadPoolInterface( host ).RaiseProcessEvent( data, tag, self )
+		    ThreadPoolInterface( host ).RaiseProcessEvent( data, self )
 		  loop
 		  
 		End Sub

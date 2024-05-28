@@ -2,8 +2,8 @@
 Class ThreadPool
 Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h0, Description = 416464206461746120746F207468652071756575652E204966207468652071756575652069732066756C6C2C20746869732077696C6C20706175736520756E74696C20616E20736C6F7420697320617661696C61626C652E205573652054727941646420696E737465616420776865726520706F737369626C652E
-		Sub Add(data As Variant, tag As Variant = Nil)
-		  while not TryAdd( data, tag )
+		Sub Add(data As Variant)
+		  while not TryAdd( data )
 		    #if DebugBuild
 		      System.DebugLog "Queue is full, trying again"
 		    #endif
@@ -81,10 +81,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Function GetNextItem(ByRef item As Pair) As Boolean
+		Private Function GetNextItem(ByRef data As Variant) As Boolean
 		  var result as boolean
 		  
-		  if DataQueue.TrySkim( item ) then
+		  if DataQueue.TrySkim( data ) then
 		    result = true
 		  end if
 		  
@@ -158,8 +158,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub RaiseProcessEvent(data As Variant, tag As Variant, sender As Thread)
-		  RaiseEvent Process( data, tag, sender )
+		Private Sub RaiseProcessEvent(data As Variant, sender As Thread)
+		  RaiseEvent Process( data, sender )
 		  
 		End Sub
 	#tag EndMethod
@@ -240,12 +240,12 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 417474656D70747320746F206164642074686520676976656E2060646174616020616E6420607461676020746F2074686520717565756520666F722070726F63657373696E672E2057696C6C2072657475726E2046616C7365206966207468652071756575652069732066756C6C2E
-		Function TryAdd(data As Variant, tag As Variant = Nil) As Boolean
+		Function TryAdd(data As Variant) As Boolean
 		  if IsClosed then
 		    raise new UnsupportedOperationException( "Cannot queue data after calling Finish until all processes have completed" )
 		  end if
 		  
-		  var added as boolean = DataQueue.TryAdd( tag, data, QueueLimit )
+		  var added as boolean = DataQueue.TryAdd( data, QueueLimit )
 		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
 		  
 		  if added and not WakeAThread and ( Jobs <= 0 or Pool.Count < Jobs ) then
@@ -287,7 +287,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndHook
 
 	#tag Hook, Flags = &h0, Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Event Process(data As Variant, tag As Variant, currentThread As Thread)
+		Event Process(data As Variant, currentThread As Thread)
 	#tag EndHook
 
 	#tag Hook, Flags = &h0, Description = 416674657220686176696E672066696C6C6564207468652071756575652C206120736C6F7420686173206265636F6D6520617661696C61626C6520666F72206D6F726520646174612E

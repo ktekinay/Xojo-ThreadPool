@@ -2,13 +2,13 @@
 Private Class Queuer
 Inherits ThreadSafeVariantArray
 	#tag Method, Flags = &h0
-		Function TryAdd(tag As Variant, data As Variant, limit As Integer) As Boolean
+		Function TryAdd(data As Variant, limit As Integer) As Boolean
 		  var result as boolean
 		  
 		  MySemaphore.Signal
 		  
 		  if limit <= 0 or self.Data.Count < limit then
-		    self.Data.Add tag : data
+		    self.Data.Add data
 		    result = true
 		  end if
 		  
@@ -19,7 +19,7 @@ Inherits ThreadSafeVariantArray
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function TrySkim(ByRef data As Pair) As Boolean
+		Function TrySkim(ByRef data As Variant) As Boolean
 		  var result as boolean
 		  
 		  MySemaphore.Signal
@@ -38,6 +38,22 @@ Inherits ThreadSafeVariantArray
 
 
 	#tag ViewBehavior
+		#tag ViewProperty
+			Name="Count"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="LastIndex"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
 			Visible=true

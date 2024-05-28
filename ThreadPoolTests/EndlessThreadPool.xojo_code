@@ -2,9 +2,8 @@
 Protected Class EndlessThreadPool
 Inherits ThreadPoolTestBase
 	#tag Event , Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Sub Process(data As Variant, tag As Variant, currentThread As Thread)
+		Sub Process(data As Variant, currentThread As Thread)
 		  #pragma unused data
-		  #pragma unused tag
 		  
 		  var index as integer
 		  do
