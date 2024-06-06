@@ -3,26 +3,26 @@ Class ThreadSafeVariantArray
 Implements Iterable
 	#tag Method, Flags = &h0
 		Sub Add(item As Variant)
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  self.Data.Add item
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub AddAt(index As Integer, item As Variant)
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  Data.AddAt( index, item )
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  Exception err as RuntimeException
 		    try
-		      MySemaphore.Release
+		      Locker.Leave
 		    end try
 		    
 		    raise err
@@ -32,18 +32,18 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Sub Constructor()
-		  MySemaphore = new Semaphore
+		  Locker = new CriticalSection
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Function IndexOf(item As Variant) As Integer
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  var result as integer = Data.IndexOf( item )
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  return result
 		  
@@ -52,7 +52,7 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Iterator() As Iterator
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  var newArr() as variant
 		  newArr.ResizeTo Data.LastIndex
@@ -61,7 +61,7 @@ Implements Iterable
 		    newArr( i ) = Data( i )
 		  next
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  return new M_ThreadPool.ThreadSafeVariantArrayIterator( newArr )
 		  
@@ -70,7 +70,7 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Operator_Convert() As Variant()
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  var result() as variant
 		  result.ResizeTo Data.LastIndex
@@ -79,7 +79,7 @@ Implements Iterable
 		    result( i ) = Data( i )
 		  next
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  return result
 		  
@@ -101,17 +101,17 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Operator_Subscript(index As Integer) As Variant
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  var result as variant = self.Data( index )
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  return result
 		  
 		  Exception err as RuntimeException
 		    try
-		      MySemaphore.Release
+		      Locker.Leave
 		    end try
 		    
 		    raise err
@@ -120,15 +120,15 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Sub Operator_Subscript(index As Integer, Assigns item As Variant)
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  self.Data( index ) = item
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  Exception err as RuntimeException
 		    try
-		      MySemaphore.Release
+		      Locker.Leave
 		    end try
 		    
 		    raise err
@@ -137,17 +137,17 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Function Pop() As Variant
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  var result as variant = self.Data.Pop
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  return result
 		  
 		  Exception err as RuntimeException
 		    try
-		      MySemaphore.Release
+		      Locker.Leave
 		    end try
 		    
 		    raise err
@@ -157,26 +157,26 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Sub RemoveAll()
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  Data.RemoveAll
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub RemoveAt(index As Integer)
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  Data.RemoveAt( index )
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  Exception err as RuntimeException
 		    try
-		      MySemaphore.Release
+		      Locker.Leave
 		    end try
 		    
 		    raise err
@@ -190,37 +190,37 @@ Implements Iterable
 		    raise new OutOfBoundsException
 		  end if
 		  
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  Data.ResizeTo newSize
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Shuffle()
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  Data.Shuffle
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Sort(sorter As SortDelegate)
-		  MySemaphore.Signal
+		  Locker.Enter
 		  
 		  Data.Sort sorter
 		  
-		  MySemaphore.Release
+		  Locker.Leave
 		  
 		  Exception err As RuntimeException
 		    try
-		      MySemaphore.Release
+		      Locker.Leave
 		    end try
 		    
 		    raise err
@@ -236,11 +236,11 @@ Implements Iterable
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  MySemaphore.Signal
+			  Locker.Enter
 			  
 			  var count as integer = self.Data.Count
 			  
-			  MySemaphore.Release
+			  Locker.Leave
 			  
 			  return count
 			End Get
@@ -255,11 +255,11 @@ Implements Iterable
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  MySemaphore.Signal
+			  Locker.Enter
 			  
 			  var lastIndex as integer = self.Data.LastIndex
 			  
-			  MySemaphore.Release
+			  Locker.Leave
 			  
 			  return lastIndex
 			End Get
@@ -268,7 +268,7 @@ Implements Iterable
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h1
-		Protected MySemaphore As Semaphore
+		Protected Locker As CriticalSection
 	#tag EndProperty
 
 

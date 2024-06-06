@@ -43,10 +43,10 @@ Inherits TestGroup
 	#tag Method, Flags = &h21
 		Private Sub AssertUnlocked(arr As ThreadSafeVariantArray)
 		  var spy as new ObjectSpy( arr )
-		  var s as Semaphore = spy.MySemaphore
+		  var s as CriticalSection = spy.Locker
 		  
-		  if s.TrySignal then
-		    s.Release
+		  if s.TryEnter then
+		    s.Leave
 		    Assert.Pass
 		  else
 		    Assert.Fail "Was locked"
