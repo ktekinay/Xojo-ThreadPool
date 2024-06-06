@@ -1,38 +1,37 @@
-#tag Window
-Begin Window XojoUnitAboutWindow
-   BackColor       =   &cFFFFFF00
+#tag DesktopWindow
+Begin DesktopWindow XojoUnitAPI2AboutWindow
    Backdrop        =   0
-   CloseButton     =   True
+   BackgroundColor =   &cFFFFFF00
    Composite       =   False
-   Frame           =   0
+   DefaultLocation =   0
    FullScreen      =   False
-   FullScreenButton=   False
-   HasBackColor    =   False
+   HasBackgroundColor=   False
+   HasCloseButton  =   True
+   HasFullScreenButton=   False
+   HasMaximizeButton=   False
+   HasMinimizeButton=   False
    Height          =   192
    ImplicitInstance=   True
-   LiveResize      =   "True"
    MacProcID       =   0
-   MaxHeight       =   32000
-   MaximizeButton  =   False
-   MaxWidth        =   32000
+   MaximumHeight   =   32000
+   MaximumWidth    =   32000
    MenuBar         =   0
    MenuBarVisible  =   True
-   MinHeight       =   64
-   MinimizeButton  =   False
-   MinWidth        =   64
-   Placement       =   0
+   MinimumHeight   =   64
+   MinimumWidth    =   64
    Resizeable      =   False
    Title           =   "About XojoUnit"
+   Type            =   0
    Visible         =   True
    Width           =   301
-   Begin Label AppNameLabel
-      AutoDeactivate  =   True
+   Begin DesktopLabel AppNameLabel
+      AllowAutoDeactivate=   True
       Bold            =   True
-      DataField       =   ""
-      DataSource      =   ""
       Enabled         =   True
+      FontName        =   "System"
+      FontSize        =   14.0
+      FontUnit        =   0
       Height          =   20
-      HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
       Italic          =   False
@@ -49,25 +48,23 @@ Begin Window XojoUnitAboutWindow
       TabPanelIndex   =   0
       TabStop         =   True
       Text            =   "XojoUnit"
-      TextAlign       =   1
+      TextAlignment   =   2
       TextColor       =   &c00000000
-      TextFont        =   "System"
-      TextSize        =   14.0
-      TextUnit        =   0
+      Tooltip         =   ""
       Top             =   20
       Transparent     =   False
       Underline       =   False
       Visible         =   True
       Width           =   261
    End
-   Begin Label VersionLabel
-      AutoDeactivate  =   True
+   Begin DesktopLabel VersionLabel
+      AllowAutoDeactivate=   True
       Bold            =   False
-      DataField       =   ""
-      DataSource      =   ""
       Enabled         =   True
+      FontName        =   "SmallSystem"
+      FontSize        =   0.0
+      FontUnit        =   0
       Height          =   20
-      HelpTag         =   ""
       Index           =   -2147483648
       InitialParent   =   ""
       Italic          =   False
@@ -84,11 +81,9 @@ Begin Window XojoUnitAboutWindow
       TabPanelIndex   =   0
       TabStop         =   True
       Text            =   "Version"
-      TextAlign       =   1
+      TextAlignment   =   2
       TextColor       =   &c00000000
-      TextFont        =   "SmallSystem"
-      TextSize        =   0.0
-      TextUnit        =   0
+      Tooltip         =   ""
       Top             =   40
       Transparent     =   False
       Underline       =   False
@@ -96,14 +91,14 @@ Begin Window XojoUnitAboutWindow
       Width           =   261
    End
 End
-#tag EndWindow
+#tag EndDesktopWindow
 
 #tag WindowCode
 #tag EndWindowCode
 
 #tag Events VersionLabel
 	#tag Event
-		Sub Open()
+		Sub Opening()
 		  Me.Text = "Version " + TestController.XojoUnitVersion
 		  
 		End Sub
@@ -159,8 +154,7 @@ End
 			"6 - Rounded Window"
 			"7 - Global Floating Window"
 			"8 - Sheet Window"
-			"9 - Metal Window"
-			"11 - Modeless Dialog"
+			"9 - Modeless Dialog"
 		#tag EndEnumValues
 	#tag EndViewProperty
 	#tag ViewProperty
@@ -223,8 +217,8 @@ End
 		Visible=true
 		Group="Background"
 		InitialValue="&hFFFFFF"
-		Type="Color"
-		EditorType="Color"
+		Type="ColorGroup"
+		EditorType="ColorGroup"
 	#tag EndViewProperty
 	#tag ViewProperty
 		Name="Backdrop"
@@ -287,7 +281,7 @@ End
 		Visible=true
 		Group="Appearance"
 		InitialValue=""
-		Type="MenuBar"
+		Type="DesktopMenuBar"
 		EditorType=""
 	#tag EndViewProperty
 	#tag ViewProperty
