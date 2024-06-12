@@ -24,6 +24,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  t.Start
 		  
 		  Pool.Add t
+		  
+		  while t.ThreadState = Thread.ThreadStates.NotRunning
+		  wend
+		  
+		  #if DebugBuild
+		    System.DebugLog "Added Thread to pool"
+		  #endif
+		  
 		End Sub
 	#tag EndMethod
 
