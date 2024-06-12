@@ -32,6 +32,10 @@ Inherits ThreadSafeVariantArray
 		  
 		  Locker.Leave
 		  
+		  #if DebugBuild
+		    System.DebugLog "Skimmed"
+		  #endif
+		  
 		  return result
 		End Function
 	#tag EndMethod
