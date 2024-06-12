@@ -7,6 +7,11 @@ Inherits ThreadPoolTestBase
 		  
 		  var value as integer = data.IntegerValue
 		  
+		  if value = 0 then
+		    System.DebugLog "Got null value"
+		    return
+		  end if
+		  
 		  while value <> 1
 		    if ( value mod 2 ) = 0 then
 		      value = value \ 2
@@ -15,8 +20,8 @@ Inherits ThreadPoolTestBase
 		    end if
 		  wend
 		  
-		  while ( System.Microseconds - start ) < 20000
-		  wend
+		  'while ( System.Microseconds - start ) < 20000
+		  'wend
 		  
 		  System.DebugLog "Processed " + data.StringValue
 		  
