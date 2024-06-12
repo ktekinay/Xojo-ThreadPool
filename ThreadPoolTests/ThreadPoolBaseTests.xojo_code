@@ -201,15 +201,27 @@ Inherits TestGroup
 		  
 		  Assert.IsFalse tp.IsQueueFull
 		  
+		  call tp.TryAdd( 10 )
+		  
+		  while not tp.IsProcessing
+		  wend
+		  
 		  for i as integer = 10000 to 20000
 		    if tp.TryAdd( i ) = false then
 		      exit
 		    end if
 		  next
 		  
-		  Assert.IsTrue tp.IsQueueFull
+		  if not tp.IsQueueFull then
+		    Assert.Fail "Queue is not full"
+		  else
+		    Assert.Pass
+		  end if
 		  
-		  tp.Stop
+		  tp.StopIt = true
+		  tp.Finish
+		  '
+		  'tp.Stop
 		End Sub
 	#tag EndMethod
 
@@ -275,13 +287,17 @@ Inherits TestGroup
 		  var tp as new ThreeN1ThreadPool( CurrentMethodName )
 		  tp.Type = GetType
 		  
-		  Assert.IsTrue tp.TryAdd( 1000 )
-		  Assert.IsTrue tp.TryAdd( 2000 )
+		  tp.QueueLimit = 0
+		  tp.Jobs = 4
+		  
+		  for i as integer = 1000 to 50000 step 1000
+		    Assert.IsTrue tp.TryAdd( i )
+		  next
 		  
 		  tp.Wait
 		  
 		  Assert.IsTrue tp.IsFinished
-		  Assert.AreEqual 2, tp.Result
+		  Assert.AreEqual 50, tp.Result
 		End Sub
 	#tag EndMethod
 

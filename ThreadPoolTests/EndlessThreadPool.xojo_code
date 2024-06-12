@@ -5,15 +5,34 @@ Inherits ThreadPoolTestBase
 		Sub Process(data As Variant, currentThread As Thread)
 		  #pragma unused data
 		  
+		  IsProcessing = true
+		  
 		  var index as integer
 		  do
 		    index = index + 1
 		    System.DebugLog "Looping " + index.ToString
 		    currentThread.Sleep 1000
-		  loop
+		  loop until StopIt
 		  
 		End Sub
 	#tag EndEvent
+
+
+	#tag Method, Flags = &h0
+		Sub Stop()
+		  StopIt = true
+		  
+		End Sub
+	#tag EndMethod
+
+
+	#tag Property, Flags = &h0
+		IsProcessing As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		StopIt As Boolean
+	#tag EndProperty
 
 
 	#tag ViewBehavior
