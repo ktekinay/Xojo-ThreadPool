@@ -236,9 +236,11 @@ Implements Iterable
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
+			  var count as integer
+			  
 			  Locker.Enter
 			  
-			  var count as integer = self.Data.Count
+			  count = self.Data.Count
 			  
 			  Locker.Leave
 			  
