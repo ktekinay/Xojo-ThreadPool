@@ -67,9 +67,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
-		    if t.ThreadState = Thread.ThreadStates.Paused then
-		      t.Resume
-		    end if
 		  next
 		  
 		  PoolCleaner = new Thread
@@ -220,14 +217,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		      // Do nothing
 		      //
 		      
-		    case Thread.ThreadStates.Paused
-		      //
-		      // The resume will end the Thread when there it sees there is no data left
-		      //
-		      t.Resume
-		      
 		    case else
 		      t.Stop
+		      
 		    end select
 		    #pragma BreakOnExceptions default
 		  next
@@ -248,7 +240,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  var added as boolean = DataQueue.TryAdd( data, QueueLimit )
 		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
 		  
-		  if added and not WakeAThread and ( Jobs <= 0 or Pool.Count < Jobs ) then
+		  if added and ( Jobs <= 0 or Pool.Count < Jobs ) and DataQueue.Count <> 0 then
 		    AddThreadToPool
 		  end if
 		  
@@ -266,19 +258,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  wend
 		  
 		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Function WakeAThread() As Boolean
-		  for each t as M_ThreadPool.PThread in Pool
-		    if t.ThreadState = Thread.ThreadStates.Paused then
-		      t.Resume
-		      return true
-		    end if
-		  next
-		  
-		  return false
-		End Function
 	#tag EndMethod
 
 

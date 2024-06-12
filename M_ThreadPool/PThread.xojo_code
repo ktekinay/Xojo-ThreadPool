@@ -29,11 +29,9 @@ Inherits Thread
 		      //
 		      host = nil
 		      
-		      Pause
+		      Sleep 2
 		      continue
 		    end if
-		    
-		    Type = host.Type
 		    
 		    ThreadPoolInterface( host ).RaiseProcessEvent( data, self )
 		  loop
