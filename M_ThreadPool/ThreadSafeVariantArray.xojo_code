@@ -3,26 +3,26 @@ Class ThreadSafeVariantArray
 Implements Iterable
 	#tag Method, Flags = &h0
 		Sub Add(item As Variant)
-		  Locker.Enter
+		  Lock
 		  
 		  self.Data.Add item
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub AddAt(index As Integer, item As Variant)
-		  Locker.Enter
+		  Lock
 		  
 		  Data.AddAt( index, item )
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  Exception err as RuntimeException
 		    try
-		      Locker.Leave
+		      Unlock
 		    end try
 		    
 		    raise err
@@ -39,11 +39,11 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Function IndexOf(item As Variant) As Integer
-		  Locker.Enter
+		  Lock
 		  
 		  var result as integer = Data.IndexOf( item )
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  return result
 		  
@@ -52,7 +52,7 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Iterator() As Iterator
-		  Locker.Enter
+		  Lock
 		  
 		  var newArr() as variant
 		  newArr.ResizeTo Data.LastIndex
@@ -61,16 +61,22 @@ Implements Iterable
 		    newArr( i ) = Data( i )
 		  next
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  return new M_ThreadPool.ThreadSafeVariantArrayIterator( newArr )
 		  
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h1
+		Protected Sub Lock()
+		  Locker.Enter
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Operator_Convert() As Variant()
-		  Locker.Enter
+		  Lock
 		  
 		  var result() as variant
 		  result.ResizeTo Data.LastIndex
@@ -79,7 +85,7 @@ Implements Iterable
 		    result( i ) = Data( i )
 		  next
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  return result
 		  
@@ -101,17 +107,17 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Operator_Subscript(index As Integer) As Variant
-		  Locker.Enter
+		  Lock
 		  
 		  var result as variant = self.Data( index )
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  return result
 		  
 		  Exception err as RuntimeException
 		    try
-		      Locker.Leave
+		      Unlock
 		    end try
 		    
 		    raise err
@@ -120,15 +126,15 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Sub Operator_Subscript(index As Integer, Assigns item As Variant)
-		  Locker.Enter
+		  Lock
 		  
 		  self.Data( index ) = item
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  Exception err as RuntimeException
 		    try
-		      Locker.Leave
+		      Unlock
 		    end try
 		    
 		    raise err
@@ -137,17 +143,17 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Function Pop() As Variant
-		  Locker.Enter
+		  Lock
 		  
 		  var result as variant = self.Data.Pop
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  return result
 		  
 		  Exception err as RuntimeException
 		    try
-		      Locker.Leave
+		      Unlock
 		    end try
 		    
 		    raise err
@@ -157,26 +163,26 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Sub RemoveAll()
-		  Locker.Enter
+		  Lock
 		  
 		  Data.RemoveAll
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub RemoveAt(index As Integer)
-		  Locker.Enter
+		  Lock
 		  
 		  Data.RemoveAt( index )
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  Exception err as RuntimeException
 		    try
-		      Locker.Leave
+		      Unlock
 		    end try
 		    
 		    raise err
@@ -190,37 +196,37 @@ Implements Iterable
 		    raise new OutOfBoundsException
 		  end if
 		  
-		  Locker.Enter
+		  Lock
 		  
 		  Data.ResizeTo newSize
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Shuffle()
-		  Locker.Enter
+		  Lock
 		  
 		  Data.Shuffle
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Sort(sorter As SortDelegate)
-		  Locker.Enter
+		  Lock
 		  
 		  Data.Sort sorter
 		  
-		  Locker.Leave
+		  Unlock
 		  
 		  Exception err As RuntimeException
 		    try
-		      Locker.Leave
+		      Unlock
 		    end try
 		    
 		    raise err
@@ -232,17 +238,23 @@ Implements Iterable
 		Private Delegate Function SortDelegate(item1 As Variant, item2 As Variant) As Integer
 	#tag EndDelegateDeclaration
 
+	#tag Method, Flags = &h1
+		Protected Sub Unlock()
+		  Locker.Leave
+		End Sub
+	#tag EndMethod
+
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
 			  var count as integer
 			  
-			  Locker.Enter
+			  Lock
 			  
 			  count = self.Data.Count
 			  
-			  Locker.Leave
+			  Unlock
 			  
 			  return count
 			End Get
@@ -257,11 +269,11 @@ Implements Iterable
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  Locker.Enter
+			  Lock
 			  
 			  var lastIndex as integer = self.Data.LastIndex
 			  
-			  Locker.Leave
+			  Unlock
 			  
 			  return lastIndex
 			End Get
@@ -269,8 +281,8 @@ Implements Iterable
 		LastIndex As Integer
 	#tag EndComputedProperty
 
-	#tag Property, Flags = &h1
-		Protected Locker As CriticalSection
+	#tag Property, Flags = &h21
+		Private Locker As CriticalSection
 	#tag EndProperty
 
 
