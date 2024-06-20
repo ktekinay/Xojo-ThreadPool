@@ -18,14 +18,6 @@ Inherits ThreadPoolTestBase
 	#tag EndEvent
 
 
-	#tag Method, Flags = &h0
-		Sub Stop()
-		  StopIt = true
-		  
-		End Sub
-	#tag EndMethod
-
-
 	#tag Property, Flags = &h0
 		IsProcessing As Boolean
 	#tag EndProperty
@@ -134,6 +126,14 @@ Inherits ThreadPoolTestBase
 			Group="Behavior"
 			InitialValue="8"
 			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="IsProcessing"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Boolean"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
