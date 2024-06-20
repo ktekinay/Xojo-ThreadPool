@@ -5,14 +5,14 @@ Inherits ThreadSafeVariantArray
 		Function TryAdd(data As Variant, limit As Integer) As Boolean
 		  var result as boolean
 		  
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  if limit <= 0 or self.Data.Count < limit then
 		    self.Data.Add data
 		    result = true
 		  end if
 		  
-		  Unlock
+		  holder = nil
 		  
 		  return result
 		End Function
@@ -22,7 +22,7 @@ Inherits ThreadSafeVariantArray
 		Function TrySkim(ByRef data As Variant) As Boolean
 		  var result as boolean
 		  
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  if self.Data.Count <> 0 then
 		    data = self.Data( 0 )
@@ -30,7 +30,7 @@ Inherits ThreadSafeVariantArray
 		    result = true
 		  end if
 		  
-		  Unlock
+		  holder = nil
 		  
 		  #if DebugBuild
 		    System.DebugLog "Skimmed"

@@ -3,30 +3,23 @@ Class ThreadSafeVariantArray
 Implements Iterable
 	#tag Method, Flags = &h0
 		Sub Add(item As Variant)
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  self.Data.Add item
 		  
-		  Unlock
+		  holder = nil
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub AddAt(index As Integer, item As Variant)
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  Data.AddAt( index, item )
 		  
-		  Unlock
+		  holder = nil
 		  
-		  Exception err as RuntimeException
-		    try
-		      Unlock
-		    end try
-		    
-		    raise err
-		    
 		End Sub
 	#tag EndMethod
 
@@ -39,11 +32,11 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Function IndexOf(item As Variant) As Integer
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  var result as integer = Data.IndexOf( item )
 		  
-		  Unlock
+		  holder = nil
 		  
 		  return result
 		  
@@ -52,7 +45,7 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Iterator() As Iterator
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  var newArr() as variant
 		  newArr.ResizeTo Data.LastIndex
@@ -61,22 +54,16 @@ Implements Iterable
 		    newArr( i ) = Data( i )
 		  next
 		  
-		  Unlock
+		  holder = nil
 		  
 		  return new M_ThreadPool.ThreadSafeVariantArrayIterator( newArr )
 		  
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1
-		Protected Sub Lock()
-		  Locker.Enter
-		End Sub
-	#tag EndMethod
-
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Operator_Convert() As Variant()
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  var result() as variant
 		  result.ResizeTo Data.LastIndex
@@ -85,7 +72,7 @@ Implements Iterable
 		    result( i ) = Data( i )
 		  next
 		  
-		  Unlock
+		  holder = nil
 		  
 		  return result
 		  
@@ -107,86 +94,60 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Function Operator_Subscript(index As Integer) As Variant
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  var result as variant = self.Data( index )
 		  
-		  Unlock
+		  holder = nil
 		  
 		  return result
 		  
-		  Exception err as RuntimeException
-		    try
-		      Unlock
-		    end try
-		    
-		    raise err
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Attributes( Hidden )  Sub Operator_Subscript(index As Integer, Assigns item As Variant)
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  self.Data( index ) = item
 		  
-		  Unlock
+		  holder = nil
 		  
-		  Exception err as RuntimeException
-		    try
-		      Unlock
-		    end try
-		    
-		    raise err
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Function Pop() As Variant
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  var result as variant = self.Data.Pop
 		  
-		  Unlock
+		  holder = nil
 		  
 		  return result
 		  
-		  Exception err as RuntimeException
-		    try
-		      Unlock
-		    end try
-		    
-		    raise err
-		    
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub RemoveAll()
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  Data.RemoveAll
 		  
-		  Unlock
+		  holder = nil
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub RemoveAt(index As Integer)
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  Data.RemoveAt( index )
 		  
-		  Unlock
+		  holder = nil
 		  
-		  Exception err as RuntimeException
-		    try
-		      Unlock
-		    end try
-		    
-		    raise err
-		    
 		End Sub
 	#tag EndMethod
 
@@ -196,41 +157,35 @@ Implements Iterable
 		    raise new OutOfBoundsException
 		  end if
 		  
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  Data.ResizeTo newSize
 		  
-		  Unlock
+		  holder = nil
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Shuffle()
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  Data.Shuffle
 		  
-		  Unlock
+		  holder = nil
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub Sort(sorter As SortDelegate)
-		  Lock
+		  var holder as new LockHolder( Locker )
 		  
 		  Data.Sort sorter
 		  
-		  Unlock
+		  holder = nil
 		  
-		  Exception err As RuntimeException
-		    try
-		      Unlock
-		    end try
-		    
-		    raise err
-		    
+		  
 		End Sub
 	#tag EndMethod
 
@@ -238,23 +193,17 @@ Implements Iterable
 		Private Delegate Function SortDelegate(item1 As Variant, item2 As Variant) As Integer
 	#tag EndDelegateDeclaration
 
-	#tag Method, Flags = &h1
-		Protected Sub Unlock()
-		  Locker.Leave
-		End Sub
-	#tag EndMethod
-
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
 			  var count as integer
 			  
-			  Lock
+			  var holder as new LockHolder( Locker )
 			  
 			  count = self.Data.Count
 			  
-			  Unlock
+			  holder = nil
 			  
 			  return count
 			End Get
@@ -269,11 +218,11 @@ Implements Iterable
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  Lock
+			  var holder as new LockHolder( Locker )
 			  
 			  var lastIndex as integer = self.Data.LastIndex
 			  
-			  Unlock
+			  holder = nil
 			  
 			  return lastIndex
 			End Get
@@ -281,8 +230,8 @@ Implements Iterable
 		LastIndex As Integer
 	#tag EndComputedProperty
 
-	#tag Property, Flags = &h21
-		Private Locker As CriticalSection
+	#tag Property, Flags = &h1
+		Protected Locker As CriticalSection
 	#tag EndProperty
 
 

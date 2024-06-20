@@ -37,6 +37,7 @@ MenuBar=XojoUnitAPI2MenuBar;XojoUnit/XojoUnitAPI2MenuBar.xojo_menu;&h00000000726
 DesktopToolbar=XojoUnitTestAPI2Toolbar;XojoUnit/XojoUnitTestAPI2Toolbar.xojo_toolbar;&h000000004C5F6799;&h000000002516B04D;false
 DesktopWindow=XojoUnitAPI2AboutWindow;XojoUnit/XojoUnitAPI2AboutWindow.xojo_window;&h0000000006C01E42;&h000000002516B04D;false
 DesktopWindow=XojoUnitAPI2TestWindow;XojoUnit/XojoUnitAPI2TestWindow.xojo_window;&h000000005E851226;&h000000002516B04D;false
+Class=LockHolder;M_ThreadPool/LockHolder.xojo_code;&h0000000056F1DFFF;&h0000000011B2CFFF;false
 DefaultWindow=XojoUnitAPI2TestWindow
 AppMenuBar=XojoUnitAPI2MenuBar
 MajorVersion=1
