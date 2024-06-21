@@ -3,6 +3,10 @@ Private Class Queuer
 Inherits ThreadSafeVariantArray
 	#tag Method, Flags = &h0
 		Function TryAdd(data As Variant, limit As Integer) As Boolean
+		  if IsDenyed then
+		    return false
+		  end if
+		  
 		  var result as boolean
 		  
 		  var holder as new LockHolder( Locker )
@@ -20,6 +24,10 @@ Inherits ThreadSafeVariantArray
 
 	#tag Method, Flags = &h0
 		Function TrySkim(ByRef data As Variant) As Boolean
+		  if IsDenyed then
+		    return false
+		  end if
+		  
 		  var result as boolean
 		  
 		  var holder as new LockHolder( Locker )
@@ -39,6 +47,11 @@ Inherits ThreadSafeVariantArray
 		  return result
 		End Function
 	#tag EndMethod
+
+
+	#tag Property, Flags = &h0
+		IsDenyed As Boolean
+	#tag EndProperty
 
 
 	#tag ViewBehavior

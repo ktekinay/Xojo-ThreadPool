@@ -172,14 +172,6 @@ Inherits Thread
 				"1 - Preemptive"
 			#tag EndEnumValues
 		#tag EndViewProperty
-		#tag ViewProperty
-			Name="IsClosed"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
-			Type="Boolean"
-			EditorType=""
-		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
 #tag EndClass

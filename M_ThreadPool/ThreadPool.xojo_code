@@ -93,7 +93,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    result = true
 		  end if
 		  
-		  if not IsClosed and not IsDestructing and RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off then
+		  if not IsClosed and not DataQueue.IsDenyed and not IsDestructing and _
+		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off then
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Single
 		  end if
 		  
@@ -117,6 +118,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  do
 		    if Pool.Count = 0 then
 		      DataQueue.RemoveAll
+		      DataQueue.IsDenyed = false
 		      
 		      if sender isa object then
 		        RemoveHandler sender.Run, AddressOf PoolCleaner_Run
@@ -213,11 +215,15 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h0, Description = 53746F70732070726F63657373696E6720696D6D6564696174656C7920616E6420636C6F7365732074686520546872656164506F6F6C2E
 		Sub Stop()
-		  DataQueue.RemoveAll
+		  DataQueue.IsDenyed = true
 		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
-		    
+		  next
+		  
+		  DataQueue.RemoveAll // When is succeeds, no thread will be able to attempt to lock the queue
+		  
+		  for each t as M_ThreadPool.PThread in Pool
 		    #pragma BreakOnExceptions false
 		    select case t.ThreadState
 		    case Thread.ThreadStates.NotRunning
