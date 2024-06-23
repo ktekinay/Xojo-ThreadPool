@@ -301,7 +301,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndHook
 
 
-	#tag ComputedProperty, Flags = &h0
+	#tag ComputedProperty, Flags = &h0, Description = 546865206E756D626572206F6620546872656164732063757272656E746C792072756E6E696E672E
 		#tag Getter
 			Get
 			  var lock as new LockHolder( PoolLock )
