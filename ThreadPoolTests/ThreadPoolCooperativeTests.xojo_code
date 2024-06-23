@@ -16,6 +16,9 @@ Inherits ThreadPoolBaseTests
 		  tp.MaxJobs = 1
 		  tp.Add 1
 		  
+		  tp.Type = Thread.Types.Cooperative
+		  Assert.Pass "No change to Type is fine"
+		  
 		  #pragma BreakOnExceptions false
 		  try
 		    tp.Type = Thread.Types.Preemptive
