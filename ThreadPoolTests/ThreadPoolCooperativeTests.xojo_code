@@ -8,6 +8,28 @@ Inherits ThreadPoolBaseTests
 	#tag EndEvent
 
 
+	#tag Method, Flags = &h0
+		Sub ChangeTypeTest()
+		  var tp as new EndlessThreadPool
+		  tp.Type = Thread.Types.Cooperative
+		  
+		  tp.Jobs = 1
+		  tp.Add 1
+		  
+		  #pragma BreakOnExceptions false
+		  try
+		    tp.Type = Thread.Types.Preemptive
+		    Assert.Fail "Did not raise expected exception"
+		  catch err as RuntimeException
+		    Assert.IsTrue err.Message.Contains( "type" )
+		  end try
+		  #pragma BreakOnExceptions default
+		  
+		  tp.Stop
+		End Sub
+	#tag EndMethod
+
+
 	#tag ViewBehavior
 		#tag ViewProperty
 			Name="Duration"

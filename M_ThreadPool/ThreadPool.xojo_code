@@ -338,6 +338,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Jobs As Integer = 4
 	#tag EndProperty
 
+	#tag Property, Flags = &h21, Description = 5365747320746865207479706573206F662054687265616473206173207468657920617265206C61756E636865642E204368616E67696E67207468697320646F6573206E6F742061666665637420616C72656164792D72756E6E696E6720546872656164732E
+		Private mType As Thread.Types = Thread.Types.Preemptive
+	#tag EndProperty
+
 	#tag Property, Flags = &h21
 		Private mWeakRef As WeakRef
 	#tag EndProperty
@@ -367,9 +371,27 @@ Implements M_ThreadPool.ThreadPoolInterface
 		RemainingInQueue As Integer
 	#tag EndComputedProperty
 
-	#tag Property, Flags = &h0, Description = 5365747320746865207479706573206F662054687265616473206173207468657920617265206C61756E636865642E204368616E67696E67207468697320646F6573206E6F742061666665637420616C72656164792D72756E6E696E6720546872656164732E
-		Type As Thread.Types = Thread.Types.Preemptive
-	#tag EndProperty
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mType
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  if mType = value then
+			    return
+			  end if
+			  
+			  if not IsFinished then
+			    raise new RuntimeException( "Cannot change Type while the ThreadPool is running." )
+			  end if
+			  
+			  mType = value
+			End Set
+		#tag EndSetter
+		Type As Thread.Types
+	#tag EndComputedProperty
 
 	#tag Property, Flags = &h21
 		Private WasFull As Boolean
@@ -446,7 +468,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="Type"
+			Name="mType"
 			Visible=true
 			Group="Behavior"
 			InitialValue="Thread.Types.Preemptive"
