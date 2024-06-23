@@ -234,17 +234,14 @@ Inherits TestGroup
 		  
 		  Assert.IsFalse StopTester.IsFinished
 		  
-		  var spy as new ObjectSpy( stopTester )
-		  var pool as new ObjectSpy( spy.Pool )
-		  
-		  var count as integer = pool.Count
+		  var count as integer = stopTester.ActiveJobs
 		  Assert.AreEqual 1, count
 		  
 		  stopTester.Stop
 		  
 		  Assert.AreEqual 0, stopTester.RemainingInQueue
 		  
-		  count = pool.Count
+		  count = stopTester.ActiveJobs
 		  Assert.AreEqual 0, count
 		End Sub
 	#tag EndMethod

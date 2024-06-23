@@ -23,7 +23,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  t.Start
 		  
+		  var lock as new LockHolder( PoolLock )
 		  Pool.Add t
+		  lock = nil
 		  
 		  while t.ThreadState = Thread.ThreadStates.NotRunning
 		  wend
@@ -38,7 +40,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  DataQueue = new M_ThreadPool.Queuer
-		  Pool = new M_ThreadPool.ThreadSafeVariantArray
+		  PoolLock = new Semaphore
 		  
 		  RaiseQueueEventsTimer = new Timer
 		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
@@ -62,14 +64,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  RaiseQueueEventsTimer = nil
 		  
 		  do
-		  loop until Pool.Count = 0
+		  loop until ActiveJobs = 0
 		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 43616C6C207468697320746F20696E6469636174652074686174206E6F206D6F726520646174612077696C6C20626520616464656420746F2074686520717565756520666F722070726F63657373696E672E
 		Sub Finish()
-		  if IsClosed or Pool.Count = 0 then
+		  if IsClosed or ActiveJobs = 0 then
 		    return
 		  end if
 		  
@@ -116,9 +118,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h21
 		Private Sub PoolCleaner_Run(sender As Thread)
 		  do
-		    if Pool.Count = 0 then
-		      DataQueue.RemoveAll
-		      DataQueue.IsDenyed = false
+		    var lock as new LockHolder( PoolLock )
+		    
+		    if Pool.Count = 0 then // ActiveJobs will also attempt to lock so don't use it here
+		      DataQueue = new Queuer
 		      
 		      if sender isa object then
 		        RemoveHandler sender.Run, AddressOf PoolCleaner_Run
@@ -139,6 +142,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 		        RemoveThreadFromPool t
 		      end if
 		    next
+		    
+		    lock = nil
 		    
 		    if sender isa object then
 		      sender.Sleep 20, true
@@ -194,9 +199,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Sub RemoveThreadFromPool(t As M_ThreadPool.PThread)
-		  if t.ThreadState <> Thread.ThreadStates.NotRunning then
-		    t.Stop
-		  end if
+		  //
+		  // Caller should lock the Pool
+		  //
 		  
 		  while t.ThreadState <> Thread.ThreadStates.NotRunning
 		  wend
@@ -254,7 +259,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  var added as boolean = DataQueue.TryAdd( data, QueueLimit )
 		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
 		  
-		  if added and ( Jobs <= 0 or Pool.Count < Jobs ) and DataQueue.Count <> 0 then
+		  if added and ( Jobs <= 0 or ActiveJobs < Jobs ) and DataQueue.Count <> 0 then
 		    AddThreadToPool
 		  end if
 		  
@@ -296,6 +301,20 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndHook
 
 
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  var lock as new LockHolder( PoolLock )
+			  var count as integer = Pool.Count
+			  lock = nil
+			  
+			  return count
+			  
+			End Get
+		#tag EndGetter
+		ActiveJobs As Integer
+	#tag EndComputedProperty
+
 	#tag Property, Flags = &h21
 		Private DataQueue As M_ThreadPool.Queuer
 	#tag EndProperty
@@ -317,7 +336,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag ComputedProperty, Flags = &h0, Description = 52657475726E732054727565207768656E206E6F2054687265616473206172652072756E6E696E672E
 		#tag Getter
 			Get
-			  return Pool.Count = 0
+			  return ActiveJobs = 0
 			  
 			End Get
 		#tag EndGetter
@@ -347,11 +366,15 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private Pool As ThreadSafeVariantArray
+		Private Pool() As M_ThreadPool.PThread
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
 		Private PoolCleaner As Thread
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private PoolLock As Semaphore
 	#tag EndProperty
 
 	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D652E20557365207A65726F20666F7220756E6C696D697465642E
