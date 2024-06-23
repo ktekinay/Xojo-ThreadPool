@@ -13,7 +13,7 @@ Inherits ThreadPoolBaseTests
 		  var tp as new EndlessThreadPool
 		  tp.Type = Thread.Types.Cooperative
 		  
-		  tp.Jobs = 1
+		  tp.MaxJobs = 1
 		  tp.Add 1
 		  
 		  #pragma BreakOnExceptions false

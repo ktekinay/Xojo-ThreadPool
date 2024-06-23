@@ -259,7 +259,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  var added as boolean = DataQueue.TryAdd( data, QueueLimit )
 		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
 		  
-		  if added and ( Jobs <= 0 or ActiveJobs < Jobs ) and DataQueue.Count <> 0 then
+		  if added and ( MaxJobs <= 0 or ActiveJobs < MaxJobs ) and DataQueue.Count <> 0 then
 		    AddThreadToPool
 		  end if
 		  
@@ -354,7 +354,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h0, Description = 546865206D6178696D756D206E756D626572206F66205468726561647320746F2072756E20617420616E7920676976656E2074696D652E203020697320756E6C696D6974656420736F2061206E6577205468726561642077696C6C2062652073746172746564206966206E6F206578697374696E672054687265616420697320617661696C61626C652E
-		Jobs As Integer = 4
+		MaxJobs As Integer = 4
 	#tag EndProperty
 
 	#tag Property, Flags = &h21, Description = 5365747320746865207479706573206F662054687265616473206173207468657920617265206C61756E636865642E204368616E67696E67207468697320646F6573206E6F742061666665637420616C72656164792D72756E6E696E6720546872656164732E
@@ -467,7 +467,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="Jobs"
+			Name="MaxJobs"
 			Visible=true
 			Group="Behavior"
 			InitialValue="4"

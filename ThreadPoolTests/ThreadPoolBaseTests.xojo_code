@@ -7,7 +7,7 @@ Inherits TestGroup
 		  tp.Type = GetType
 		  
 		  tp.QueueLimit = 2
-		  tp.Jobs = 1
+		  tp.MaxJobs = 1
 		  
 		  for i as integer = 1051 to 1060
 		    tp.Add i
@@ -49,7 +49,7 @@ Inherits TestGroup
 		  EventsTester = new ThreeN1ThreadPool( CurrentMethodName )
 		  EventsTester.Type = GetType
 		  
-		  EventsTester.Jobs = 1
+		  EventsTester.MaxJobs = 1
 		  EventsTester.QueueLimit = 4
 		  
 		  AddHandler EventsTester.QueueAvailable, AddressOf EventsTester_QueueAvailable
@@ -197,7 +197,7 @@ Inherits TestGroup
 		  tp.Type = GetType
 		  
 		  tp.QueueLimit = 1
-		  tp.Jobs = 1
+		  tp.MaxJobs = 1
 		  
 		  Assert.IsFalse tp.IsQueueFull
 		  
@@ -285,7 +285,7 @@ Inherits TestGroup
 		  tp.Type = GetType
 		  
 		  tp.QueueLimit = 0
-		  tp.Jobs = 4
+		  tp.MaxJobs = 4
 		  
 		  for i as integer = 1000 to 50000 step 1000
 		    Assert.IsTrue tp.TryAdd( i )
