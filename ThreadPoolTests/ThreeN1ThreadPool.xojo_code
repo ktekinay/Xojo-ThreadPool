@@ -27,7 +27,15 @@ Inherits ThreadPoolTestBase
 		  
 		  currentThread.AddUserInterfaceUpdate data : nil
 		  
+		  if ResultLock is nil then
+		    ResultLock = new CriticalSection
+		  end if
+		  
+		  ResultLock.Type = self.Type
+		  
+		  ResultLock.Enter
 		  Result = Result + 1
+		  ResultLock.Leave
 		End Sub
 	#tag EndEvent
 
@@ -36,8 +44,28 @@ Inherits ThreadPoolTestBase
 		Result As Integer
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private ResultLock As CriticalSection
+	#tag EndProperty
+
 
 	#tag ViewBehavior
+		#tag ViewProperty
+			Name="MaximumJobs"
+			Visible=true
+			Group="Behavior"
+			InitialValue="4"
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="ActiveJobs"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
 		#tag ViewProperty
 			Name="IsQueueFull"
 			Visible=false
@@ -111,14 +139,6 @@ Inherits ThreadPoolTestBase
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
-			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="Jobs"
-			Visible=false
-			Group="Behavior"
-			InitialValue="4"
 			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty

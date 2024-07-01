@@ -308,14 +308,14 @@ Inherits TestGroup
 		  tp.QueueLimit = 0
 		  tp.MaximumJobs = 4
 		  
-		  for i as integer = 1000 to 50000 step 1000
+		  for i as integer = 1000 to 100000 step 1000
 		    Assert.IsTrue tp.TryAdd( i )
 		  next
 		  
 		  tp.Wait
 		  
 		  Assert.IsTrue tp.IsFinished
-		  Assert.AreEqual 50, tp.Result
+		  Assert.AreEqual 100, tp.Result
 		End Sub
 	#tag EndMethod
 
