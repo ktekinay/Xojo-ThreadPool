@@ -24,8 +24,9 @@ Implements Iterable
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Constructor()
+		Sub Constructor(type As Thread.Types = Thread.Types.Preemptive)
 		  Locker = new CriticalSection
+		  Locker.Type = type
 		  
 		End Sub
 	#tag EndMethod

@@ -8,10 +8,13 @@ Inherits ThreadPoolTestBase
 		  IsProcessing = true
 		  
 		  var index as integer
+		  
 		  do
 		    index = index + 1
-		    System.DebugLog "Looping " + index.ToString
-		    currentThread.Sleep 1000
+		    if ( index mod 1000 ) = 0 then
+		      System.DebugLog "Looping " + index.ToString
+		    end if
+		    currentThread.Sleep 1
 		  loop until StopIt
 		  
 		End Sub
@@ -28,6 +31,22 @@ Inherits ThreadPoolTestBase
 
 
 	#tag ViewBehavior
+		#tag ViewProperty
+			Name="MaximumJobs"
+			Visible=true
+			Group="Behavior"
+			InitialValue="4"
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="ActiveJobs"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
 		#tag ViewProperty
 			Name="IsQueueFull"
 			Visible=false
@@ -105,14 +124,6 @@ Inherits ThreadPoolTestBase
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="Jobs"
-			Visible=false
-			Group="Behavior"
-			InitialValue="4"
-			Type="Integer"
-			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
 			Name="IsFinished"
 			Visible=false
 			Group="Behavior"
@@ -130,6 +141,14 @@ Inherits ThreadPoolTestBase
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="IsProcessing"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Boolean"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="StopIt"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""

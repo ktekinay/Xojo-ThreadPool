@@ -39,7 +39,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h0
 		Sub Constructor()
-		  DataQueue = new M_ThreadPool.Queuer
+		  CreateQueuer
 		  PoolLock = new Semaphore
 		  
 		  RaiseQueueEventsTimer = new Timer
@@ -47,6 +47,12 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  RaiseQueueEventsTimer.Period = 10
 		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub CreateQueuer()
+		  DataQueue = new M_ThreadPool.Queuer( Type )
 		End Sub
 	#tag EndMethod
 
@@ -411,6 +417,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 			  end if
 			  
 			  mType = value
+			  CreateQueuer
 			End Set
 		#tag EndSetter
 		Type As Thread.Types

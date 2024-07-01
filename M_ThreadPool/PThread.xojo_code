@@ -49,6 +49,8 @@ Inherits Thread
 			Get
 			  if MyThreadPoolWeakRef is nil then
 			    return nil
+			  elseif MyThreadPoolWeakRef.Value is nil then
+			    return nil
 			  else
 			    return M_ThreadPool.ThreadPool( MyThreadPoolWeakRef.Value )
 			  end if
@@ -171,6 +173,14 @@ Inherits Thread
 				"0 - Cooperative"
 				"1 - Preemptive"
 			#tag EndEnumValues
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="IsClosed"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
