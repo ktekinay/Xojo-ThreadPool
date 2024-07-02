@@ -47,7 +47,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  next
 		  
 		  var lock as new LockHolder( UIUpdatesLock )
-		   
+		  
 		  UIUpdates.Add dict
 		  
 		  lock = nil
@@ -91,12 +91,12 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  RaiseQueueEventsTimer = new Timer
 		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
 		  
-		  RaiseQueueEventsTimer.Period = 10
+		  RaiseQueueEventsTimer.Period = 20
 		  
 		  RaiseUserInterfaceUpdateTimer = new Timer
 		  AddHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
 		  
-		  RaiseUserInterfaceUpdateTimer.Period = 10
+		  RaiseUserInterfaceUpdateTimer.Period = 50
 		  
 		  MaximumJobs = max( System.CoreCount - 1, 1 ) // Ensures it will be at least 1
 		  QueueLimit = max( MaximumJobs * 2, 8 )
