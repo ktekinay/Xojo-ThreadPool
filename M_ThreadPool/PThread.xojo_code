@@ -49,10 +49,16 @@ Inherits Thread
 			Get
 			  if MyThreadPoolWeakRef is nil then
 			    return nil
-			  elseif MyThreadPoolWeakRef.Value is nil then
+			  end if
+			  
+			  var val as object = MyThreadPoolWeakRef.Value
+			  
+			  if val is nil then
 			    return nil
 			  else
-			    return M_ThreadPool.ThreadPool( MyThreadPoolWeakRef.Value )
+			    var tp as M_ThreadPool.ThreadPool = M_ThreadPool.ThreadPool( val )
+			    
+			    return tp
 			  end if
 			End Get
 		#tag EndGetter
