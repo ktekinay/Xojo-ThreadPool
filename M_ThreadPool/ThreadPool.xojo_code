@@ -184,6 +184,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    var lock as new LockHolder( PoolLock )
 		    
 		    if Pool.Count = 0 then // ActiveJobs will also attempt to lock so don't use it here
+		      EndMicroseconds = System.Microseconds
+		      
 		      DataQueue = new Queuer
 		      
 		      if sender isa object then
@@ -195,7 +197,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		        end if
 		      end if
 		      
-		      RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
+		      RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Single
 		      
 		      exit
 		    end if
@@ -207,6 +209,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		        RemoveThreadFromPool t
 		      end if
 		    next
+		    
+		    if Pool.Count = 0 then
+		      continue
+		    end if
 		    
 		    lock = nil
 		    
@@ -343,6 +349,11 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    raise new UnsupportedOperationException( "Cannot queue data after calling Finish until all processes have completed" )
 		  end if
 		  
+		  if ActiveJobs = 0 then
+		    StartMicroseconds = System.Microseconds
+		    EndMicroseconds = 0.0
+		  end if
+		  
 		  var added as boolean = DataQueue.TryAdd( data, QueueLimit )
 		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
 		  
@@ -404,6 +415,30 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Property, Flags = &h21
 		Private DataQueue As M_ThreadPool.Queuer
+	#tag EndProperty
+
+	#tag ComputedProperty, Flags = &h0, Description = 546865206E756D626572206F66206D6963726F7365636F6E64732073696E63652070726F63657373696E6720737461727465642E
+		#tag Getter
+			Get
+			  if StartMicroseconds = 0.0 then
+			    return 0.0
+			  end if
+			  
+			  var endMicroseconds as double = self.EndMicroseconds
+			  
+			  if endMicroseconds = 0.0 then
+			    endMicroseconds = System.Microseconds
+			  end if
+			  
+			  return endMicroseconds - StartMicroseconds
+			  
+			End Get
+		#tag EndGetter
+		ElapsedMicroseconds As Double
+	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21
+		Private EndMicroseconds As Double
 	#tag EndProperty
 
 	#tag ComputedProperty, Flags = &h21
@@ -484,6 +519,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag EndGetter
 		RemainingInQueue As Integer
 	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21
+		Private StartMicroseconds As Double
+	#tag EndProperty
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter

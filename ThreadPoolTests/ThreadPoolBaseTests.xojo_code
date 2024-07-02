@@ -64,6 +64,32 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub ElapsedMicrosecondsTest()
+		  var tp as new ThreeN1ThreadPool( CurrentMethodName )
+		  tp.Type = GetType
+		  
+		  Assert.IsTrue tp.ElapsedMicroseconds = 0.0
+		  
+		  tp.QueueLimit = 0
+		  tp.MaximumJobs = System.CoreCount - 1
+		  
+		  for i as integer = 1051 to 1100
+		    tp.Add i
+		    Assert.IsTrue tp.ElapsedMicroseconds > 0.0
+		  next
+		  
+		  tp.Wait
+		  
+		  var elapsed as double = tp.ElapsedMicroseconds
+		  Assert.IsTrue elapsed > 0.0
+		  
+		  Thread.SleepCurrent 1
+		  
+		  Assert.AreEqual elapsed, tp.ElapsedMicroseconds
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub EventsTest()
 		  EventsTestIndex = 1
 		  
