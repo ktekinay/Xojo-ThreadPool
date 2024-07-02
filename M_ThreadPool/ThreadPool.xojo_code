@@ -19,8 +19,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  t.Type = Type
 		  t.MyThreadPool = self
 		  
-		  AddHandler t.UserInterfaceUpdate, WeakAddressOf PThread_UserInterfaceUpdate
-		  
 		  t.Start
 		  
 		  var lock as new LockHolder( PoolLock )
@@ -38,14 +36,67 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub AddUserInterfaceUpdate(data As Dictionary)
+		  var dict as new Dictionary
+		  
+		  var keys() as variant = data.Keys
+		  var values() as variant = data.Values
+		  
+		  for i as integer = 0 to keys.LastIndex
+		    dict.Value( keys( i ) ) = values( i )
+		  next
+		  
+		  var lock as new LockHolder( UIUpdatesLock )
+		   
+		  UIUpdates.Add dict
+		  
+		  lock = nil
+		  
+		  StartUserInteraceUpdateTimer
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub AddUserInterfaceUpdate(ParamArray data() As Pair)
+		  AddUserInterfaceUpdate data
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub AddUserInterfaceUpdate(data() As Pair)
+		  var dict as new Dictionary
+		  
+		  for each p as pair in data
+		    dict.Value( p.Left ) = p.Right
+		  next
+		  
+		  var lock as new LockHolder( UIUpdatesLock )
+		  
+		  UIUpdates.Add dict
+		  
+		  lock = nil
+		  
+		  StartUserInteraceUpdateTimer
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub Constructor()
 		  CreateQueuer
+		  
 		  PoolLock = new Semaphore
+		  UIUpdatesLock = new Semaphore
+		  UIUpdatesLock.Type = Type
 		  
 		  RaiseQueueEventsTimer = new Timer
 		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
 		  
 		  RaiseQueueEventsTimer.Period = 10
+		  
+		  RaiseUserInterfaceUpdateTimer = new Timer
+		  AddHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
+		  
+		  RaiseUserInterfaceUpdateTimer.Period = 10
 		  
 		  MaximumJobs = max( System.CoreCount - 1, 1 ) // Ensures it will be at least 1
 		  QueueLimit = max( MaximumJobs * 2, 8 )
@@ -71,6 +122,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off
 		  RemoveHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
 		  RaiseQueueEventsTimer = nil
+		  
+		  RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
+		  RemoveHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
 		  
 		  do
 		  loop until ActiveJobs = 0
@@ -141,6 +195,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 		        end if
 		      end if
 		      
+		      RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
+		      
 		      exit
 		    end if
 		    
@@ -158,16 +214,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		      sender.Sleep 20, true
 		    end if
 		  loop
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub PThread_UserInterfaceUpdate(sender As M_ThreadPool.PThread, data() As Dictionary)
-		  #pragma unused sender
-		  
-		  RaiseEvent UserInterfaceUpdate( data )
-		  
-		  
 		End Sub
 	#tag EndMethod
 
@@ -207,6 +253,31 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub RaiseUserInterfaceUpdateTimer_Action(sender As Timer)
+		  #pragma unused sender
+		  
+		  var lock as new LockHolder( UIUpdatesLock )
+		  
+		  if UIUpdates.Count <> 0 then
+		    var uiUpdates() as Dictionary = self.UIUpdates
+		    var cleanArr() as Dictionary
+		    self.UIUpdates = cleanArr
+		    
+		    lock = nil
+		    
+		    RaiseEvent UserInterfaceUpdate( uiUpdates )
+		  end if
+		  
+		  lock = nil
+		  
+		  if IsFinished then
+		    RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
+		  end if
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub RemoveThreadFromPool(t As M_ThreadPool.PThread)
 		  //
 		  // Caller should lock the Pool
@@ -215,14 +286,21 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  while t.ThreadState <> Thread.ThreadStates.NotRunning
 		  wend
 		  
-		  RemoveHandler t.UserInterfaceUpdate, WeakAddressOf PThread_UserInterfaceUpdate
-		  
 		  for i as integer = 0 to Pool.LastIndex
 		    if Pool( i ) is t then
 		      Pool.RemoveAt i
 		      exit
 		    end if
 		  next
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub StartUserInteraceUpdateTimer()
+		  if RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off then
+		    RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Multiple
+		  end if
 		  
 		End Sub
 	#tag EndMethod
@@ -394,6 +472,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Private RaiseQueueEventsTimer As Timer
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private RaiseUserInterfaceUpdateTimer As Timer
+	#tag EndProperty
+
 	#tag ComputedProperty, Flags = &h0, Description = 546865206E756D626572206F66206974656D732077616974696E6720746F2062652070726F6365737365642E
 		#tag Getter
 			Get
@@ -420,11 +502,22 @@ Implements M_ThreadPool.ThreadPoolInterface
 			  end if
 			  
 			  mType = value
+			  
+			  UIUpdatesLock.Type = value
 			  CreateQueuer
+			  
 			End Set
 		#tag EndSetter
 		Type As Thread.Types
 	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21
+		Private UIUpdates() As Dictionary
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private UIUpdatesLock As Semaphore
+	#tag EndProperty
 
 	#tag Property, Flags = &h21
 		Private WasFull As Boolean
@@ -478,9 +571,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="MaximumJobs"
-			Visible=true
+			Visible=false
 			Group="Behavior"
-			InitialValue="4"
+			InitialValue=""
 			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty
@@ -494,9 +587,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="QueueLimit"
-			Visible=true
+			Visible=false
 			Group="Behavior"
-			InitialValue="8"
+			InitialValue=""
 			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty

@@ -40,6 +40,29 @@ Inherits Thread
 	#tag EndEvent
 
 
+	#tag Method, Flags = &h0
+		Sub AddUserInterfaceUpdate(data as Dictionary)
+		  var host as ThreadPool = MyThreadPool
+		  if host is nil then
+		    return
+		  end if
+		  
+		  ThreadPoolInterface( host ).AddUserInterfaceUpdate( data )
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub AddUserInterfaceUpdate(ParamArray data() as Pair)
+		  var host as ThreadPool = MyThreadPool
+		  if host is nil then
+		    return
+		  end if
+		  
+		  ThreadPoolInterface( host ).AddUserInterfaceUpdate( data )
+		End Sub
+	#tag EndMethod
+
+
 	#tag Property, Flags = &h0
 		IsClosed As Boolean
 	#tag EndProperty

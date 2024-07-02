@@ -1,6 +1,18 @@
 #tag Interface
 Private Interface ThreadPoolInterface
 	#tag Method, Flags = &h0
+		Sub AddUserInterfaceUpdate(data As Dictionary)
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub AddUserInterfaceUpdate(data() As Pair)
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function GetNextItem(ByRef data As Variant) As Boolean
 		  
 		End Function
