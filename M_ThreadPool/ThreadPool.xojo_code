@@ -48,6 +48,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  RaiseQueueEventsTimer.Period = 10
 		  
 		  MaximumJobs = max( System.CoreCount - 1, 1 ) // Ensures it will be at least 1
+		  QueueLimit = max( MaximumJobs * 2, 8 )
 		  
 		End Sub
 	#tag EndMethod
@@ -386,7 +387,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D652E20557365207A65726F20666F7220756E6C696D697465642E
-		QueueLimit As Integer = 8
+		QueueLimit As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
