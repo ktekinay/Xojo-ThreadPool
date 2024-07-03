@@ -98,8 +98,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  RaiseUserInterfaceUpdateTimer.Period = 50
 		  
-		  MaximumJobs = max( System.CoreCount - 1, 1 ) // Ensures it will be at least 1
-		  QueueLimit = max( MaximumJobs * 2, 8 )
+		  QueueLimit = max( TrueMaximumJobs * 2, 8 )
 		  
 		End Sub
 	#tag EndMethod
@@ -357,7 +356,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  var added as boolean = DataQueue.TryAdd( data, QueueLimit )
 		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
 		  
-		  if added and ( MaximumJobs <= 0 or ActiveJobs < MaximumJobs ) and DataQueue.Count <> 0 then
+		  if added and ActiveJobs < TrueMaximumJobs and DataQueue.Count <> 0 then
 		    AddThreadToPool
 		  end if
 		  
@@ -475,7 +474,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		IsQueueFull As Boolean
 	#tag EndComputedProperty
 
-	#tag Property, Flags = &h0, Description = 546865206D6178696D756D206E756D626572206F66205468726561647320746F2072756E20617420616E7920676976656E2074696D652E203020697320756E6C696D6974656420736F2061206E6577205468726561642077696C6C2062652073746172746564206966206E6F206578697374696E672054687265616420697320617661696C61626C652E2044656661756C742069732053797374656D2E436F7265436F756E74202D20312E
+	#tag Property, Flags = &h0, Description = 546865206D6178696D756D206E756D626572206F66205468726561647320746F2072756E20617420616E7920676976656E2074696D652E2044656661756C742069732053797374656D2E436F7265436F756E74202D20312E
 		MaximumJobs As Integer
 	#tag EndProperty
 
@@ -523,6 +522,22 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Property, Flags = &h21
 		Private StartMicroseconds As Double
 	#tag EndProperty
+
+	#tag ComputedProperty, Flags = &h21
+		#tag Getter
+			Get
+			  if MaximumJobs > 0 then
+			    return MaximumJobs
+			  elseif System.CoreCount = 1 then
+			    return 1
+			  else
+			    return System.CoreCount - 1
+			  end if
+			  
+			End Get
+		#tag EndGetter
+		Private TrueMaximumJobs As Integer
+	#tag EndComputedProperty
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
