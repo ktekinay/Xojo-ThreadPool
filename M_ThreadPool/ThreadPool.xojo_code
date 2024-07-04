@@ -87,11 +87,13 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  PoolLock = new Semaphore
 		  UIUpdatesLock = new Semaphore
 		  UIUpdatesLock.Type = Type
+		  RaiseQueueEventsTimerLock = new Semaphore
+		  RaiseQueueEventsTimerLock.Type = Type
 		  
 		  RaiseQueueEventsTimer = new Timer
 		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
 		  
-		  RaiseQueueEventsTimer.Period = 20
+		  RaiseQueueEventsTimer.Period = 1
 		  
 		  RaiseUserInterfaceUpdateTimer = new Timer
 		  AddHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
@@ -118,7 +120,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  IsDestructing = true
 		  Stop
 		  
+		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
 		  RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off
+		  lock = nil
+		  
 		  RemoveHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
 		  RaiseQueueEventsTimer = nil
 		  
@@ -157,10 +162,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    result = true
 		  end if
 		  
+		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
+		  
 		  if not IsClosed and not DataQueue.IsDenyed and not IsDestructing and _
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off then
-		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Single
+		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Multiple
 		  end if
+		  
+		  lock = nil
 		  
 		  return result
 		  
@@ -238,7 +247,11 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Sub RaiseQueueEventsTimer_Action(sender As Timer)
-		  #pragma unused sender
+		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
+		  
+		  sender.RunMode = Timer.RunModes.Off
+		  
+		  lock = nil
 		  
 		  if IsClosed or IsDestructing then
 		    return
@@ -507,6 +520,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
+		Private RaiseQueueEventsTimerLock As Semaphore
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
 		Private RaiseUserInterfaceUpdateTimer As Timer
 	#tag EndProperty
 
@@ -558,6 +575,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 			  mType = value
 			  
 			  UIUpdatesLock.Type = value
+			  RaiseQueueEventsTimerLock.Type = value
+			  
 			  CreateQueuer
 			  
 			End Set
