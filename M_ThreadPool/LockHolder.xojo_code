@@ -1,5 +1,11 @@
 #tag Class
 Private Class LockHolder
+	#tag Method, Flags = &h21
+		Private Sub Constructor()
+		  
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Sub Constructor(cs As CriticalSection)
 		  self.CS = cs
@@ -38,6 +44,28 @@ Private Class LockHolder
 		  end if
 		  
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Shared Function TryLock(cs As CriticalSection) As M_ThreadPool.LockHolder
+		  if cs.TryEnter then
+		    var lock as new LockHolder
+		    lock.CS = cs
+		    return lock
+		  end if
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Shared Function TryLock(s As Semaphore) As M_ThreadPool.LockHolder
+		  if s.TrySignal then
+		    var lock as new LockHolder
+		    lock.S = s
+		    return lock
+		  end if
+		  
+		End Function
 	#tag EndMethod
 
 
@@ -88,14 +116,6 @@ Private Class LockHolder
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
-			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="S"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
 			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty

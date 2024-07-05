@@ -162,14 +162,22 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    result = true
 		  end if
 		  
-		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
+		  var lock as LockHolder = LockHolder.TryLock( RaiseQueueEventsTimerLock )
 		  
-		  if not IsClosed and not DataQueue.IsDenyed and not IsDestructing and _
+		  //
+		  // If we can't get a lock here, it means either another thread is already doing it
+		  // or the Timer code is about to run anyway. In either case, we won't need to
+		  // bother and can just move on.
+		  //
+		  
+		  if lock isa object and _
+		    not IsClosed and not DataQueue.IsDenyed and not IsDestructing and _
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off then
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Multiple
+		    
+		    lock = nil
 		  end if
 		  
-		  lock = nil
 		  
 		  return result
 		  
@@ -701,6 +709,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 				"0 - Cooperative"
 				"1 - Preemptive"
 			#tag EndEnumValues
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="ElapsedMicroseconds"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Double"
+			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
