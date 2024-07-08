@@ -19,6 +19,8 @@ Inherits TestGroup
 		  
 		  Assert.AreEqual 0, tp.ActiveJobs
 		  Assert.IsTrue tp.IsFinished
+		  
+		  tp.Stop
 		End Sub
 	#tag EndMethod
 
@@ -37,6 +39,9 @@ Inherits TestGroup
 		  tp.Wait
 		  
 		  Assert.AreEqual 10, tp.Result
+		  
+		  tp.Stop
+		  
 		End Sub
 	#tag EndMethod
 
@@ -53,6 +58,7 @@ Inherits TestGroup
 		  
 		  var wr as new WeakRef( tp )
 		  
+		  tp.Stop
 		  tp = nil
 		  
 		  var start as integer = System.Ticks
@@ -86,6 +92,8 @@ Inherits TestGroup
 		  Thread.SleepCurrent 1
 		  
 		  Assert.AreEqual elapsed, tp.ElapsedMicroseconds
+		  
+		  tp.Stop
 		End Sub
 	#tag EndMethod
 
@@ -122,6 +130,8 @@ Inherits TestGroup
 		  
 		  EventsTester = nil
 		  
+		  sender.Stop
+		  
 		  AsyncComplete
 		  
 		End Sub
@@ -138,7 +148,8 @@ Inherits TestGroup
 	#tag Method, Flags = &h21
 		Private Sub EventsTester_QueueDrained(sender As ThreadPool)
 		  Assert.IsFalse sender.IsFinished
-		  EventsTester.Finish
+		  EventsTester.Wait
+		  
 		End Sub
 	#tag EndMethod
 
@@ -266,9 +277,8 @@ Inherits TestGroup
 		  end if
 		  
 		  tp.StopIt = true
-		  tp.Finish
-		  '
-		  'tp.Stop
+		  tp.Wait
+		  
 		End Sub
 	#tag EndMethod
 
@@ -276,6 +286,9 @@ Inherits TestGroup
 		Sub StopTest()
 		  var stopTester as new EndlessThreadPool( CurrentMethodName )
 		  stopTester.Type = GetType
+		  
+		  stopTester.Stop
+		  Assert.IsTrue stopTester.IsFinished
 		  
 		  Assert.IsTrue stopTester.TryAdd( 1 )
 		  

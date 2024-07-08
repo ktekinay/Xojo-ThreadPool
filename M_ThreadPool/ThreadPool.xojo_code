@@ -118,7 +118,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  #endif
 		  
 		  IsDestructing = true
-		  Stop
+		  
+		  DataQueue.IsDenyed = true
+		  
+		  for each t as M_ThreadPool.PThread in Pool
+		    t.IsClosed = true
+		  next
+		  
+		  DataQueue.RemoveAll // When this succeeds, no thread will be able to attempt to lock the queue
 		  
 		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
 		  RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off
@@ -153,11 +160,23 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Function GetNextItem(ByRef data As Variant) As Boolean
+		  if IsDestructing then
+		    return false
+		  end if
+		  
 		  var result as boolean
 		  
-		  if DataQueue.TrySkim( data ) then
-		    result = true
-		  end if
+		  try
+		    if DataQueue.TrySkim( data ) then
+		      result = true
+		    end if
+		    
+		  catch err as NilObjectException
+		    //
+		    // Should only happen if destructing
+		    return false
+		    
+		  end try
 		  
 		  var lock as LockHolder = LockHolder.TryLock( RaiseQueueEventsTimerLock )
 		  
@@ -336,7 +355,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    t.IsClosed = true
 		  next
 		  
-		  DataQueue.RemoveAll // When is succeeds, no thread will be able to attempt to lock the queue
+		  DataQueue.RemoveAll // When this succeeds, no thread will be able to attempt to lock the queue
 		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    #pragma BreakOnExceptions false
