@@ -40,10 +40,6 @@ Inherits ThreadSafeVariantArray
 		  
 		  holder = nil
 		  
-		  #if DebugBuild
-		    System.DebugLog "Skimmed"
-		  #endif
-		  
 		  return result
 		End Function
 	#tag EndMethod
@@ -109,6 +105,14 @@ Inherits ThreadSafeVariantArray
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="IsDenyed"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Boolean"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior

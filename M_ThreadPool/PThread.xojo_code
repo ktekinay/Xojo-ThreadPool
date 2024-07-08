@@ -3,14 +3,6 @@ Private Class PThread
 Inherits Thread
 	#tag Event
 		Sub Run()
-		  #if DebugBuild
-		    if Type = Thread.Types.Preemptive then
-		      System.DebugLog "Launched preemptive thread"
-		    else
-		      System.DebugLog "Launched cooperative thread"
-		    end if
-		  #endif
-		  
 		  do
 		    var host as M_ThreadPool.ThreadPool = MyThreadPool
 		    

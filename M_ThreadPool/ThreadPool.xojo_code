@@ -4,9 +4,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h0, Description = 416464206461746120746F207468652071756575652E204966207468652071756575652069732066756C6C2C20746869732077696C6C20706175736520756E74696C20616E20736C6F7420697320617661696C61626C652E205573652054727941646420696E737465616420776865726520706F737369626C652E
 		Sub Add(data As Variant)
 		  while not TryAdd( data )
-		    #if DebugBuild
-		      System.DebugLog "Queue is full, trying again"
-		    #endif
 		    Thread.SleepCurrent 5
 		  wend
 		  
@@ -27,10 +24,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  while t.ThreadState = Thread.ThreadStates.NotRunning
 		  wend
-		  
-		  #if DebugBuild
-		    System.DebugLog "Added Thread to pool"
-		  #endif
 		  
 		End Sub
 	#tag EndMethod
@@ -113,10 +106,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Sub Destructor()
-		  #if DebugBuild
-		    System.DebugLog "ThreadPool.Destructor"
-		  #endif
-		  
 		  IsDestructing = true
 		  
 		  DataQueue.IsDenyed = true

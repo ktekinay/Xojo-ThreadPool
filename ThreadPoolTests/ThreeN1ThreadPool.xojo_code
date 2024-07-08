@@ -23,8 +23,6 @@ Inherits ThreadPoolTestBase
 		  'while ( System.Microseconds - start ) < 20000
 		  'wend
 		  
-		  System.DebugLog "Processed " + data.StringValue
-		  
 		  currentThread.AddUserInterfaceUpdate data : nil
 		  
 		  ResultLock.Type = self.Type
