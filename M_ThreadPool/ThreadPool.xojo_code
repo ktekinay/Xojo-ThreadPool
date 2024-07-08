@@ -174,26 +174,23 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  catch err as NilObjectException
 		    //
 		    // Should only happen if destructing
+		    //
 		    return false
 		    
 		  end try
 		  
-		  var lock as LockHolder = LockHolder.TryLock( RaiseQueueEventsTimerLock )
+		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
 		  
-		  //
-		  // If we can't get a lock here, it means either another thread is already doing it
-		  // or the Timer code is about to run anyway. In either case, we won't need to
-		  // bother and can just move on.
-		  //
-		  
-		  if lock isa object and _
-		    not IsClosed and not DataQueue.IsDenyed and not IsDestructing and _
-		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off then
+		  if _
+		    not IsDestructing and _
+		    not DataQueue.IsDenyed and _
+		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off and _
+		    not IsClosed _
+		    then
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Multiple
-		    
-		    lock = nil
 		  end if
 		  
+		  lock = nil
 		  
 		  return result
 		  
@@ -277,7 +274,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  lock = nil
 		  
-		  if IsClosed or IsDestructing then
+		  if IsDestructing or IsClosed then
 		    return
 		  end if
 		  
