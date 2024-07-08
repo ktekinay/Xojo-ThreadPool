@@ -179,6 +179,8 @@ Inherits TestGroup
 		  FinishedTester = new ThreeN1ThreadPool( CurrentMethodName )
 		  FinishedTester.Type = GetType
 		  
+		  FinishedTester.QueueLimit = 0
+		  
 		  AddHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
 		  
 		  for i as integer = 1001 to 1010
