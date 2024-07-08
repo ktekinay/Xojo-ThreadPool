@@ -27,10 +27,6 @@ Inherits ThreadPoolTestBase
 		  
 		  currentThread.AddUserInterfaceUpdate data : nil
 		  
-		  if ResultLock is nil then
-		    ResultLock = new CriticalSection
-		  end if
-		  
 		  ResultLock.Type = self.Type
 		  
 		  ResultLock.Enter
@@ -38,6 +34,16 @@ Inherits ThreadPoolTestBase
 		  ResultLock.Leave
 		End Sub
 	#tag EndEvent
+
+
+	#tag Method, Flags = &h0
+		Sub Constructor(testName As String)
+		  // Calling the overridden superclass constructor.
+		  Super.Constructor( testName )
+		  
+		  ResultLock = new CriticalSection
+		End Sub
+	#tag EndMethod
 
 
 	#tag Property, Flags = &h0
@@ -50,6 +56,14 @@ Inherits ThreadPoolTestBase
 
 
 	#tag ViewBehavior
+		#tag ViewProperty
+			Name="ElapsedMicroseconds"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Double"
+			EditorType=""
+		#tag EndViewProperty
 		#tag ViewProperty
 			Name="MaximumJobs"
 			Visible=true
