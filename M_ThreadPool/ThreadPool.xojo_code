@@ -130,9 +130,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
 		  RemoveHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
 		  
-		  do
-		  loop until ActiveJobs = 0
-		  
 		End Sub
 	#tag EndMethod
 
