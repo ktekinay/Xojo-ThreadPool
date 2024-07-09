@@ -172,9 +172,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    
 		  end try
 		  
-		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
+		  var lock as LockHolder = LockHolder.TryLock( RaiseQueueEventsTimerLock )
 		  
-		  if _
+		  //
+		  // If we can't get a lock, it means either another thread is already doing it or
+		  // the timer is about to run. In either case, we don't need to do it again here.
+		  //
+		  
+		  if lock isa object and _
 		    not IsDestructing and _
 		    not DataQueue.IsDenied and _
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off and _
