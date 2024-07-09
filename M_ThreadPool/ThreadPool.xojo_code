@@ -210,10 +210,16 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  do
 		    var lock as new LockHolder( PoolLock )
 		    
-		    if Pool.Count = 0 then // ActiveJobs will also attempt to lock so don't use it here
+		    var pool() as M_ThreadPool.PThread = self.Pool
+		    
+		    if pool.Count = 0 then // ActiveJobs will also attempt to lock so don't use it here
 		      EndMicroseconds = System.Microseconds
 		      
-		      DataQueue = new Queuer
+		      var queue as Queuer = DataQueue
+		      
+		      if queue.UnprotectedCount <> 0 then
+		        raise new RuntimeException( "Data is still on the queue!" )
+		      end if
 		      
 		      if sender isa object then
 		        RemoveHandler sender.Run, AddressOf PoolCleaner_Run
@@ -229,15 +235,15 @@ Implements M_ThreadPool.ThreadPoolInterface
 		      exit
 		    end if
 		    
-		    for i as integer = Pool.LastIndex downto 0
+		    for i as integer = pool.LastIndex downto 0
 		      var t as M_ThreadPool.PThread = Pool( i )
 		      
 		      if t.ThreadState = Thread.ThreadStates.NotRunning then
-		        RemoveThreadFromPool t
+		        pool.RemoveAt i
 		      end if
 		    next
 		    
-		    if Pool.Count = 0 then
+		    if pool.Count = 0 then
 		      continue
 		    end if
 		    
@@ -310,25 +316,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  if IsFinished then
 		    RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
 		  end if
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub RemoveThreadFromPool(t As M_ThreadPool.PThread)
-		  //
-		  // Caller should lock the Pool
-		  //
-		  
-		  while t.ThreadState <> Thread.ThreadStates.NotRunning
-		  wend
-		  
-		  for i as integer = 0 to Pool.LastIndex
-		    if Pool( i ) is t then
-		      Pool.RemoveAt i
-		      exit
-		    end if
-		  next
 		  
 		End Sub
 	#tag EndMethod
