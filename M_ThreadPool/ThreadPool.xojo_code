@@ -108,7 +108,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Private Sub Destructor()
 		  IsDestructing = true
 		  
-		  DataQueue.IsDenyed = true
+		  DataQueue.IsDenied = true
 		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
@@ -172,7 +172,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  if _
 		    not IsDestructing and _
-		    not DataQueue.IsDenyed and _
+		    not DataQueue.IsDenied and _
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off and _
 		    not IsClosed _
 		    then
@@ -335,13 +335,14 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h0, Description = 53746F70732070726F63657373696E6720696D6D6564696174656C7920616E6420636C6F7365732074686520546872656164506F6F6C2E
 		Sub Stop()
-		  DataQueue.IsDenyed = true
+		  DataQueue.IsDenied = true
 		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
 		  next
 		  
 		  DataQueue.RemoveAll // When this succeeds, no thread will be able to attempt to lock the queue
+		  DataQueue.IsDenied = false
 		  
 		  for each t as M_ThreadPool.PThread in Pool
 		    #pragma BreakOnExceptions false

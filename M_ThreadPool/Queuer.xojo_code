@@ -3,7 +3,7 @@ Private Class Queuer
 Inherits ThreadSafeVariantArray
 	#tag Method, Flags = &h0
 		Function TryAdd(data As Variant, limit As Integer) As Boolean
-		  if IsDenyed then
+		  if IsDenied then
 		    return false
 		  end if
 		  
@@ -24,7 +24,7 @@ Inherits ThreadSafeVariantArray
 
 	#tag Method, Flags = &h0
 		Function TrySkim(ByRef data As Variant) As Boolean
-		  if IsDenyed then
+		  if IsDenied then
 		    return false
 		  end if
 		  
@@ -46,7 +46,7 @@ Inherits ThreadSafeVariantArray
 
 
 	#tag Property, Flags = &h0
-		IsDenyed As Boolean
+		IsDenied As Boolean
 	#tag EndProperty
 
 
@@ -108,7 +108,7 @@ Inherits ThreadSafeVariantArray
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="IsDenyed"
+			Name="IsDenied"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""
