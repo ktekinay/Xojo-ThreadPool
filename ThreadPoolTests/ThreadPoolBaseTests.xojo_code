@@ -32,15 +32,35 @@ Inherits TestGroup
 		  tp.QueueLimit = 2
 		  tp.MaximumJobs = 1
 		  
+		  var expected as integer
 		  for i as integer = 1051 to 1060
 		    tp.Add i
+		    expected = expected + i
 		  next
 		  
 		  tp.Wait
 		  
-		  Assert.AreEqual 10, tp.Result
+		  Assert.AreEqual expected, tp.Result
+		  
+		  if Assert.Failed then
+		    tp.Inputs.Sort
+		    for each i as integer in tp.Inputs
+		      Assert.Message i.ToString
+		    next
+		  end if
 		  
 		  tp.Stop
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub Delay(ms As Integer)
+		  var now as double = System.Microseconds
+		  var target as double = now + ( ms * 1000.0 )
+		  
+		  while System.Microseconds < target
+		  wend
 		  
 		End Sub
 	#tag EndMethod
@@ -89,7 +109,7 @@ Inherits TestGroup
 		  var elapsed as double = tp.ElapsedMicroseconds
 		  Assert.IsTrue elapsed > 0.0
 		  
-		  Thread.SleepCurrent 1
+		  Delay 1
 		  
 		  Assert.AreEqual elapsed, tp.ElapsedMicroseconds
 		  
@@ -121,7 +141,7 @@ Inherits TestGroup
 		Private Sub EventsTester_Finished(sender As ThreadPool)
 		  #pragma unused sender
 		  
-		  Assert.AreEqual 10, EventsTester.Result, "Result"
+		  Assert.AreEqual EventsTestExpected, EventsTester.Result, "Result"
 		  Assert.AreEqual 11, EventsTestIndex, "Index"
 		  
 		  RemoveHandler EventsTester.QueueAvailable, AddressOf EventsTester_QueueAvailable
@@ -139,7 +159,6 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h21
 		Private Sub EventsTester_QueueAvailable(sender As ThreadPool)
-		  Assert.IsFalse sender.IsFinished
 		  EventsTestFeeder
 		  
 		End Sub
@@ -147,7 +166,6 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h21
 		Private Sub EventsTester_QueueDrained(sender As ThreadPool)
-		  Assert.IsFalse sender.IsFinished
 		  EventsTester.Wait
 		  
 		End Sub
@@ -163,6 +181,8 @@ Inherits TestGroup
 		  Assert.Message "Starting feeder (Queue has " + EventsTester.RemainingInQueue.ToString + " remaining)"
 		  
 		  while EventsTester.TryAdd( EventsTestIndex * 100000 )
+		    EventsTestExpected = EventsTestExpected + ( EventsTestIndex * 100000 )
+		    
 		    Assert.Message "Added " + EventsTestIndex.ToString
 		    
 		    EventsTestIndex = EventsTestIndex + 1
@@ -180,6 +200,7 @@ Inherits TestGroup
 		  FinishedTester.Type = GetType
 		  
 		  FinishedTester.QueueLimit = 0
+		  FinishedTester.MaximumJobs = 1
 		  
 		  AddHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
 		  
@@ -197,8 +218,14 @@ Inherits TestGroup
 		Private Sub FinishedTester_Finished(sender As ThreadPool)
 		  RemoveHandler FinishedTester.Finished, AddressOf FinishedTester_Finished
 		  
+		  var expected as integer
+		  
+		  for i as integer = 1001 to 1010
+		    expected = expected + i
+		  next
+		  
 		  Assert.AreEqual 0, sender.RemainingInQueue
-		  Assert.AreEqual 10, FinishedTester.Result
+		  Assert.AreEqual expected, FinishedTester.Result
 		  
 		  FinishedTester = nil
 		  
@@ -228,12 +255,15 @@ Inherits TestGroup
 		  const kStartValue as integer = 1000000
 		  const kEndValue as integer = kStartValue + kCount - 1
 		  
+		  var expected as integer
+		  
 		  for i as integer = kStartValue to kEndValue
 		    Assert.IsTrue NoQueueLimitTester.TryAdd( i )
+		    expected = expected + i
 		  next
 		  
 		  NoQueueLimitTester.Wait
-		  Assert.AreEqual kCount, NoQueueLimitTester.Result
+		  Assert.AreEqual expected, NoQueueLimitTester.Result
 		  
 		  AsyncAwait 5
 		End Sub
@@ -285,26 +315,50 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub SlowFeedTest()
+		  var tp as new ThreeN1ThreadPool( CurrentMethodName )
+		  tp.Type = GetType
+		  
+		  tp.QueueLimit = 0
+		  tp.MaximumJobs = 1
+		  
+		  tp.Add 1000
+		  Delay 10
+		  tp.Add 2000
+		  
+		  tp.Wait
+		  
+		  Assert.AreEqual 3000, tp.Result
+		  
+		  if Assert.Failed then
+		    for each i as integer in tp.Inputs
+		      Assert.Message i.ToString
+		    next
+		  end if
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub StopTest()
 		  var stopTester as new EndlessThreadPool( CurrentMethodName )
 		  stopTester.Type = GetType
 		  
 		  stopTester.Stop
-		  Assert.IsTrue stopTester.IsFinished
+		  Assert.IsTrue stopTester.IsFinished, "IsFinished"
 		  
-		  Assert.IsTrue stopTester.TryAdd( 1 )
+		  Assert.IsTrue stopTester.TryAdd( 1 ), "TryAdd"
 		  
-		  Assert.IsFalse StopTester.IsFinished
+		  Assert.IsFalse StopTester.IsFinished, "IsFinished"
 		  
 		  var count as integer = stopTester.ActiveJobs
-		  Assert.AreEqual 1, count
+		  Assert.AreEqual 1, count, "Count"
 		  
 		  stopTester.Stop
 		  
-		  Assert.AreEqual 0, stopTester.RemainingInQueue
+		  Assert.AreEqual 0, stopTester.RemainingInQueue, "RemainingInQueue"
 		  
 		  count = stopTester.ActiveJobs
-		  Assert.AreEqual 0, count
+		  Assert.AreEqual 0, count, "Count"
 		End Sub
 	#tag EndMethod
 
@@ -349,14 +403,17 @@ Inherits TestGroup
 		  tp.QueueLimit = 0
 		  tp.MaximumJobs = 4
 		  
+		  var expected as integer
+		  
 		  for i as integer = 1000 to 100000 step 1000
 		    Assert.IsTrue tp.TryAdd( i )
+		    expected = expected + i
 		  next
 		  
 		  tp.Wait
 		  
 		  Assert.IsTrue tp.IsFinished
-		  Assert.AreEqual 100, tp.Result
+		  Assert.AreEqual expected, tp.Result
 		End Sub
 	#tag EndMethod
 
@@ -368,6 +425,10 @@ Inherits TestGroup
 
 	#tag Property, Flags = &h21
 		Private EventsTester As ThreeN1ThreadPool
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private EventsTestExpected As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

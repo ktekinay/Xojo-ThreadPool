@@ -3,6 +3,8 @@ Protected Class ThreeN1ThreadPool
 Inherits ThreadPoolTestBase
 	#tag Event , Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
 		Sub Process(data As Variant, currentThread As Thread)
+		  #pragma unused currentThread
+		  
 		  'var start as double = System.Microseconds
 		  
 		  var value as integer = data.IntegerValue
@@ -23,12 +25,23 @@ Inherits ThreadPoolTestBase
 		  'while ( System.Microseconds - start ) < 20000
 		  'wend
 		  
-		  currentThread.AddUserInterfaceUpdate data : nil
+		  AddUserInterfaceUpdate data : nil
 		  
 		  ResultLock.Type = self.Type
 		  
 		  ResultLock.Enter
-		  Result = Result + 1
+		  
+		  var currentResult as integer = Result
+		  var expectedResult as integer = currentResult + data.IntegerValue
+		  
+		  Result = Result + data.IntegerValue
+		  
+		  if Result <> expectedResult then
+		    break
+		  end if
+		  
+		  Inputs.Add data.IntegerValue
+		  
 		  ResultLock.Leave
 		End Sub
 	#tag EndEvent
@@ -43,6 +56,10 @@ Inherits ThreadPoolTestBase
 		End Sub
 	#tag EndMethod
 
+
+	#tag Property, Flags = &h0
+		Inputs() As Integer
+	#tag EndProperty
 
 	#tag Property, Flags = &h0
 		Result As Integer
