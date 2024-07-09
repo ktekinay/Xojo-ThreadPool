@@ -44,6 +44,13 @@ Inherits ThreadSafeVariantArray
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function UnprotectedCount() As Integer
+		  return self.Data.Count
+		  
+		End Function
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h0
 		IsDenied As Boolean
