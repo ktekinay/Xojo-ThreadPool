@@ -73,6 +73,10 @@ Inherits Thread
 
 
 	#tag Property, Flags = &h0
+		ID As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		IsClosed As Boolean
 	#tag EndProperty
 

@@ -15,6 +15,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  var t as new M_ThreadPool.PThread
 		  t.Type = Type
 		  t.MyThreadPool = self
+		  t.ID = NextThreadID
+		  
+		  NextThreadID = NextThreadID + 1
 		  
 		  t.Start
 		  
@@ -508,6 +511,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Property, Flags = &h21
 		Private mWeakRef As WeakRef
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private NextThreadID As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
