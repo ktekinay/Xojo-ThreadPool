@@ -160,6 +160,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  try
 		    if DataQueue.TrySkim( data ) then
 		      result = true
+		    else 
+		      return false
 		    end if
 		    
 		  catch err as NilObjectException
