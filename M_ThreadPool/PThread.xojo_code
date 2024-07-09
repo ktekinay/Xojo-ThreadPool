@@ -3,6 +3,8 @@ Private Class PThread
 Inherits Thread
 	#tag Event
 		Sub Run()
+		  var retrying as boolean
+		  
 		  do
 		    var host as M_ThreadPool.ThreadPool = MyThreadPool
 		    
@@ -13,6 +15,19 @@ Inherits Thread
 		    var data as variant
 		    if not ThreadPoolInterface( host ).GetNextItem( data ) then
 		      if IsClosed then
+		        if not retrying then
+		          //
+		          // Another data element might have been added, and the thread closed, 
+		          // right after the check above, so we are going to look again just to make sure
+		          //
+		          retrying = true
+		          continue
+		        end if
+		        
+		        //
+		        // If we get here, the thread was closed and we've already checked for more
+		        // data
+		        //
 		        exit
 		      end if
 		      
@@ -21,9 +36,11 @@ Inherits Thread
 		      //
 		      host = nil
 		      
-		      Sleep 2
+		      Sleep 1
 		      continue
 		    end if
+		    
+		    retrying = false
 		    
 		    ThreadPoolInterface( host ).RaiseProcessEvent( data, self )
 		  loop
