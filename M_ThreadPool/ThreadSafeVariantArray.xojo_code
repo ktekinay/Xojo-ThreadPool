@@ -25,7 +25,7 @@ Implements Iterable
 
 	#tag Method, Flags = &h0
 		Sub Constructor(type As Thread.Types = Thread.Types.Preemptive)
-		  Locker = new CriticalSection
+		  Locker = new Semaphore
 		  Locker.Type = type
 		  
 		End Sub
@@ -232,7 +232,7 @@ Implements Iterable
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h1
-		Protected Locker As CriticalSection
+		Protected Locker As Semaphore
 	#tag EndProperty
 
 
