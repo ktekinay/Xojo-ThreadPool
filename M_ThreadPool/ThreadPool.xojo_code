@@ -341,7 +341,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  DataQueue.IsDenied = false
 		  
 		  for each t as M_ThreadPool.PThread in Pool
-		    #pragma BreakOnExceptions false
 		    select case t.ThreadState
 		    case Thread.ThreadStates.NotRunning
 		      //
@@ -352,7 +351,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		      t.Stop
 		      
 		    end select
-		    #pragma BreakOnExceptions default
 		  next
 		  
 		  if not IsClosed then
