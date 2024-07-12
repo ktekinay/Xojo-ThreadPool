@@ -18,6 +18,38 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub ExceptionRunner(index As Integer, data As Variant)
+		  #pragma BreakOnExceptions false
+		  
+		  var d as Dictionary
+		  d.Value( 1 ) = nil
+		  
+		  #pragma BreakOnExceptions default
+		  
+		  Store index, data, false
+		  
+		  Exception err as RuntimeException
+		    Store index, data, true
+		    
+		    #pragma BreakOnExceptions default
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub ExceptionTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf ExceptionRunner )
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    tp.Add i : nil
+		  next
+		  
+		  tp.Wait
+		  
+		  CheckResults
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub MemoryBlockRunner(index As Integer, data As Variant)
 		  var size as integer = System.Random.InRange( 1, 8 ) * 8
 		  
