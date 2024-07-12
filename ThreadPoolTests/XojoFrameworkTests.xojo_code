@@ -163,6 +163,92 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub SQLiteRunner(index As Integer, data As Variant)
+		  var db as new SQLiteDatabase
+		  db.DatabaseFile = data
+		  db.WriteAheadLogging = true
+		  
+		  if not db.Connect then
+		    System.DebugLog "Could not connect"
+		    return
+		  end if
+		  
+		  db.ExecuteSQL "INSERT INTO data (id, s) VALUES (?, ?)", index, index.ToString
+		  
+		  var rs as RowSet = db.SelectSQL( "SELECT id, s FROM data WHERE id = ?", index )
+		  
+		  if rs.RowCount = 1 and rs.Column( "id" ).IntegerValue = index and rs.Column( "s" ).StringValue = index.ToString then
+		    Store index, nil, true
+		  else
+		    Store index, nil, false
+		  end if
+		  
+		  db.Close
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub SQLiteTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf SQLiteRunner )
+		  
+		  var folder as FolderItem = SpecialFolder.Temporary.Child( System.Microseconds.ToString( "#0" ) )
+		  folder.CreateFolder
+		  
+		  var file as FolderItem = folder.Child( "test.sqlite" )
+		  
+		  var sql as new SQLiteDatabase
+		  sql.DatabaseFile = file
+		  sql.WriteAheadLogging = true
+		  sql.CreateDatabase()
+		  
+		  Assert.IsTrue sql.Connect
+		  
+		  sql.ExecuteSQL( "CREATE TABLE data (id INTEGER PRIMARY KEY, s TEXT)" )
+		  
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    tp.Add i : file
+		  next
+		  
+		  tp.Wait
+		  
+		  CheckResults
+		  
+		  for l as integer = 1 to 2
+		    var rs as RowSet = sql.SelectSQL( "SELECT id, s FROM data ORDER BY id" )
+		    
+		    Assert.AreEqual kLastJobIndex + 1, rs.RowCount
+		    
+		    var checkValue as integer
+		    
+		    for each row as DatabaseRow in rs
+		      Assert.AreEqual rs.Column( "id" ).IntegerValue, checkValue
+		      Assert.AreEqual rs.Column( "s" ).StringValue, checkValue.ToString
+		      
+		      checkValue = checkValue + 1
+		    next
+		    
+		    sql.Close
+		    sql = nil
+		    
+		    sql = new SQLiteDatabase
+		    sql.DatabaseFile = file
+		    sql.WriteAheadLogging = true
+		    
+		    Assert.IsTrue sql.Connect
+		  next
+		  
+		  Finally
+		    if sql isa object then
+		      sql.Close
+		      sql = nil
+		    end if
+		    
+		    folder.RemoveFolderAndContents
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub Store(index As Integer, source As Variant, result As Variant)
 		  if Results.Count = 0 then
 		    Locker.Signal
