@@ -12,9 +12,11 @@ Inherits TestController
 		  
 		  group = new ThreadPoolCooperativeTests( self, "Cooperative ThreadPool" )
 		  group = new ThreadPoolPreemptiveTests( self, "Preemptive ThreadPool" )
-		  group.IncludeGroup = false
+		  'group.IncludeGroup = false
 		  
 		  group = new ThreadSafeVariantArrayTests( self, "ThreadSafeVariantArray")
+		  
+		  group = new XojoFrameworkTests( self, "Xojo Framework" )
 		  
 		End Sub
 	#tag EndEvent
