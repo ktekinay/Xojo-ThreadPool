@@ -20,6 +20,7 @@ Class=ThreadPoolCooperativeTests;ThreadPoolTests/ThreadPoolCooperativeTests.xojo
 Class=ThreadPoolPreemptiveTests;ThreadPoolTests/ThreadPoolPreemptiveTests.xojo_code;&h000000003D0397FF;&h00000000674E2FFF;false
 Class=DelegateRunnerThreadPool;ThreadPoolTests/DelegateRunnerThreadPool.xojo_code;&h000000004378B7FF;&h00000000674E2FFF;false
 Class=EndlessThreadPool;ThreadPoolTests/EndlessThreadPool.xojo_code;&h0000000004F20FFF;&h00000000674E2FFF;false
+Class=ExceptionThreadPool;ThreadPoolTests/ExceptionThreadPool.xojo_code;&h0000000038D5F7FF;&h00000000674E2FFF;false
 Class=ThreeN1ThreadPool;ThreadPoolTests/ThreeN1ThreadPool.xojo_code;&h000000005D429FFF;&h00000000674E2FFF;false
 Class=ThreadSafeVariantArrayTests;ThreadPoolTests/ThreadSafeVariantArrayTests.xojo_code;&h0000000005586FFF;&h00000000674E2FFF;false
 Folder=Tests;XojoUnit/Tests;&h0000000044C729E7;&h000000002516B04D;false

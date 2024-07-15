@@ -195,6 +195,41 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub ExceptionTest()
+		  ExceptionTester = new ExceptionThreadPool
+		  ExceptionTester.Type = GetType
+		  
+		  AddHandler ExceptionTester.UnhandledException, WeakAddressOf ExceptionTester_UnhandledException
+		  
+		  ExceptionTester.Add 100
+		  
+		  ExceptionTester.Finish
+		  
+		  AsyncAwait 5
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub ExceptionTester_UnhandledException(sender As ThreadPool, errors() As Dictionary)
+		  RemoveHandler sender.UnhandledException, WeakAddressOf ExceptionTester_UnhandledException
+		  
+		  var errorsCount as integer = errors.Count
+		  Assert.AreEqual 1, errorsCount
+		  
+		  var dict as Dictionary = errors.Pop
+		  
+		  Assert.IsTrue dict.HasKey( ThreadPool.kExceptionKey )
+		  Assert.IsTrue dict.HasKey( ThreadPool.kDataKey )
+		  
+		  Assert.IsTrue dict.Value( ThreadPool.kExceptionKey ).ObjectValue isa NilObjectException
+		  Assert.AreEqual 100, dict.Value( ThreadPool.kDataKey ).IntegerValue
+		  
+		  AsyncComplete
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub FinishedTest()
 		  FinishedTester = new ThreeN1ThreadPool( CurrentMethodName )
 		  FinishedTester.Type = GetType
@@ -436,7 +471,7 @@ Inherits TestGroup
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private ExceptionTester As ThreadPool
+		Private ExceptionTester As ExceptionThreadPool
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

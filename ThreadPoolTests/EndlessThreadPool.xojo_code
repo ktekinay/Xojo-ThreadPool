@@ -32,6 +32,14 @@ Inherits ThreadPoolTestBase
 
 	#tag ViewBehavior
 		#tag ViewProperty
+			Name="ElapsedMicroseconds"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Double"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="MaximumJobs"
 			Visible=true
 			Group="Behavior"

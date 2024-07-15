@@ -308,7 +308,24 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    
 		    lock = nil
 		    
-		    RaiseEvent UserInterfaceUpdate( uiUpdates )
+		    var exceptionDicts() as Dictionary
+		    
+		    for i as integer = uiUpdates.LastIndex downto 0
+		      var dict as Dictionary = uiUpdates( i )
+		      
+		      if dict.KeyCount = 2 and dict.HasKey( kExceptionKey ) and dict.HasKey( kDataKey ) then
+		        exceptionDicts.Add dict
+		        uiUpdates.RemoveAt i
+		      end if
+		    next
+		    
+		    if uiUpdates.Count <> 0 then
+		      RaiseEvent UserInterfaceUpdate( uiUpdates )
+		    end if
+		    
+		    if exceptionDicts.Count <> 0 then
+		      RaiseEvent UnhandledException( exceptionDicts )
+		    end if
 		  end if
 		  
 		  lock = nil
@@ -409,6 +426,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Hook, Flags = &h0, Description = 52616973656420616674657220746865206C61737420646174612069732072656D6F7665642066726F6D2074686520717565756520616E642074686520546872656164506F6F6C20686173206E6F74206265656E20636C6F7365642E
 		Event QueueDrained()
+	#tag EndHook
+
+	#tag Hook, Flags = &h0, Description = 416E20657863657074696F6E20686173206F63637572726564207768696C652070726F63657373696E672074686520676976656E20646174612E
+		Event UnhandledException(errors() As Dictionary)
 	#tag EndHook
 
 	#tag Hook, Flags = &h0, Description = 526169736564207768656E206120546872656164206973737565732041646455736572496E746572666163655570646174652E
@@ -608,6 +629,13 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Property, Flags = &h21
 		Private WasQueueLoaded As Boolean
 	#tag EndProperty
+
+
+	#tag Constant, Name = kDataKey, Type = String, Dynamic = False, Default = \"Data", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = kExceptionKey, Type = String, Dynamic = False, Default = \"Exception", Scope = Public
+	#tag EndConstant
 
 
 	#tag ViewBehavior

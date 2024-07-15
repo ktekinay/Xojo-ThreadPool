@@ -18,7 +18,7 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub ExceptionRunner(index As Integer, data As Variant)
+		Private Sub HandledExceptionRunner(index As Integer, data As Variant)
 		  #pragma BreakOnExceptions false
 		  
 		  var d as Dictionary
@@ -36,8 +36,8 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub ExceptionTest()
-		  var tp as new DelegateRunnerThreadPool( AddressOf ExceptionRunner )
+		Sub HandledExceptionTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf HandledExceptionRunner )
 		  
 		  for i as integer = 0 to kLastJobIndex
 		    tp.Add i : nil

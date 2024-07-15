@@ -42,7 +42,22 @@ Inherits Thread
 		    
 		    retrying = false
 		    
-		    ThreadPoolInterface( host ).RaiseProcessEvent( data, self )
+		    try
+		      ThreadPoolInterface( host ).RaiseProcessEvent( data, self )
+		      
+		    catch err as RuntimeException
+		      if err isa EndException or err isa ThreadEndException then
+		        raise err
+		      end if
+		      
+		      var dict as new Dictionary
+		      
+		      dict.Value( ThreadPool.kExceptionKey ) = err
+		      dict.Value( ThreadPool.kDataKey ) = data
+		      
+		      ThreadPoolInterface( host ).AddUserInterfaceUpdate dict
+		    end try
+		    
 		  loop
 		  
 		End Sub
@@ -222,6 +237,14 @@ Inherits Thread
 			Group="Behavior"
 			InitialValue=""
 			Type="Boolean"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="ID"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
