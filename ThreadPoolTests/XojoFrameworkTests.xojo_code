@@ -130,7 +130,6 @@ Inherits TestGroup
 		  
 		  p.RGBSurface.Pixel( 0, index ) = &c0000FF00
 		  
-		  System.DebugLog index.ToString
 		  Store index, nil, true
 		End Sub
 	#tag EndMethod
