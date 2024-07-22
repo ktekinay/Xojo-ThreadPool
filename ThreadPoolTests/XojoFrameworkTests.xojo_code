@@ -125,6 +125,38 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub RGBSurfaceRunner(index As Integer, data As Variant)
+		  var p as Picture = data
+		  
+		  p.RGBSurface.Pixel( 0, index ) = &c0000FF00
+		  
+		  System.DebugLog index.ToString
+		  Store index, nil, true
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub RGBSurfaceTest()
+		  var p as new Picture( 1, kLastJobIndex + 1, 32 )
+		  
+		  var tp as new DelegateRunnerThreadPool( AddressOf RGBSurfaceRunner )
+		  
+		  for h as integer = 0 to kLastJobIndex
+		    tp.Add h : p
+		  next
+		  
+		  tp.Wait
+		  
+		  CheckResults
+		  
+		  for h as integer = 0 to kLastJobIndex
+		    Assert.AreEqual &c0000FF00, p.RGBSurface.Pixel( 0, h )
+		  next
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub SameMemoryBlockRunner(index As Integer, data As Variant)
 		  var mb as MemoryBlock = data
 		  var p as ptr = mb
