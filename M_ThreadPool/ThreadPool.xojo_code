@@ -77,6 +77,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h0
 		Sub Constructor()
+		  CoreCount = System.CoreCount
+		  
 		  CreateQueuer
 		  
 		  PoolLock = new Semaphore
@@ -384,6 +386,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  end if
 		  
 		  if ActiveJobs = 0 then
+		    CoreCount = System.CoreCount // Update this here
 		    StartMicroseconds = System.Microseconds
 		    EndMicroseconds = 0.0
 		  end if
@@ -450,6 +453,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag EndGetter
 		ActiveJobs As Integer
 	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21
+		Private CoreCount As Integer
+	#tag EndProperty
 
 	#tag Property, Flags = &h21
 		Private DataQueue As M_ThreadPool.Queuer
@@ -575,10 +582,10 @@ Implements M_ThreadPool.ThreadPoolInterface
 			Get
 			  if MaximumJobs > 0 then
 			    return MaximumJobs
-			  elseif System.CoreCount = 1 then
+			  elseif CoreCount = 1 then
 			    return 1
 			  else
-			    return System.CoreCount - 1
+			    return CoreCount - 1
 			  end if
 			  
 			End Get
