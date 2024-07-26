@@ -12,7 +12,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h21
 		Private Sub AddThreadToPool()
 		  var t as new M_ThreadPool.PThread
-		  t.Type = Type
+		  t.Type = mType
 		  t.MyThreadPool = self
 		  t.ID = NextThreadID
 		  
@@ -83,9 +83,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  PoolLock = new Semaphore
 		  UIUpdatesLock = new Semaphore
-		  UIUpdatesLock.Type = Type
+		  UIUpdatesLock.Type = mType
 		  RaiseQueueEventsTimerLock = new Semaphore
-		  RaiseQueueEventsTimerLock.Type = Type
+		  RaiseQueueEventsTimerLock.Type = mType
 		  
 		  RaiseQueueEventsTimer = new Timer
 		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
@@ -96,8 +96,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  AddHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
 		  
 		  RaiseUserInterfaceUpdateTimer.Period = 50
-		  
-		  QueueLimit = max( TrueMaximumJobs * 2, 8 )
 		  
 		End Sub
 	#tag EndMethod
@@ -404,6 +402,32 @@ Implements M_ThreadPool.ThreadPoolInterface
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function Type() As Thread.Types
+		  return mType
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub Type(Assigns value As Thread.Types)
+		  if mType = value then
+		    return
+		  end if
+		  
+		  if not IsFinished then
+		    raise new RuntimeException( "Cannot change Type while the ThreadPool is running." )
+		  end if
+		  
+		  mType = value
+		  
+		  UIUpdatesLock.Type = value
+		  RaiseQueueEventsTimerLock.Type = value
+		  
+		  CreateQueuer
+		  
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 5761697420756E74696C20616C6C20746872656164732061726520636F6D706C6574652E20496D706C69657320436C6F73652E
 		Sub Wait()
 		  Finish
@@ -548,8 +572,8 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Private PoolLock As Semaphore
 	#tag EndProperty
 
-	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D652E20557365207A65726F20666F7220756E6C696D697465642E
-		QueueLimit As Integer
+	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D6520746F206B6565702066726F6D206F7665726C6F6164696E67206D656D6F72792E20557365207A65726F20666F7220756E6C696D69746564206F7220736F6D65206D756C7469706C65206F662053797374656D2E436F7265436F756E742E
+		QueueLimit As Integer = 0
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -591,34 +615,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 			End Get
 		#tag EndGetter
 		Private TrueMaximumJobs As Integer
-	#tag EndComputedProperty
-
-	#tag ComputedProperty, Flags = &h0
-		#tag Getter
-			Get
-			  return mType
-			End Get
-		#tag EndGetter
-		#tag Setter
-			Set
-			  if mType = value then
-			    return
-			  end if
-			  
-			  if not IsFinished then
-			    raise new RuntimeException( "Cannot change Type while the ThreadPool is running." )
-			  end if
-			  
-			  mType = value
-			  
-			  UIUpdatesLock.Type = value
-			  RaiseQueueEventsTimerLock.Type = value
-			  
-			  CreateQueuer
-			  
-			End Set
-		#tag EndSetter
-		Type As Thread.Types
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h21
@@ -733,18 +729,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 			InitialValue=""
 			Type="Integer"
 			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="Type"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
-			Type="Thread.Types"
-			EditorType="Enum"
-			#tag EnumValues
-				"0 - Cooperative"
-				"1 - Preemptive"
-			#tag EndEnumValues
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ElapsedMicroseconds"

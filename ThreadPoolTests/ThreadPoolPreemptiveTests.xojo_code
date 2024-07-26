@@ -8,6 +8,21 @@ Inherits ThreadPoolBaseTests
 	#tag EndEvent
 
 
+	#tag Method, Flags = &h0
+		Sub DefaultQueueLimitTest()
+		  var tp as new ThreadPool
+		  Assert.AreEqual 0, tp.QueueLimit
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub DefaultTypeTest()
+		  var tp as new ThreadPool
+		  Assert.IsTrue tp.Type = Thread.Types.Preemptive
+		End Sub
+	#tag EndMethod
+
+
 	#tag ViewBehavior
 		#tag ViewProperty
 			Name="Duration"
