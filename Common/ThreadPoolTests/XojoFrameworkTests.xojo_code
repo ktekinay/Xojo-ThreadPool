@@ -10,6 +10,97 @@ Inherits TestGroup
 
 
 	#tag Method, Flags = &h21
+		Private Sub BinaryStreamBigWriteRunner(index As Integer, data As Variant)
+		  var p as pair = data
+		  
+		  var s as string = p.Left
+		  var bs as BinaryStream = p.Right
+		  
+		  bs.Write s
+		  
+		  Store index, nil, true
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub BinaryStreamBigWriteTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf BinaryStreamBigWriteRunner )
+		  
+		  const kFileName as string = "TPBinaryStreamBigWrite.txt"
+		  
+		  var file as FolderItem = SpecialFolder.Temporary.Child( kFileName )
+		  
+		  var bs as BinaryStream = BinaryStream.Create( file, true )
+		  bs.LittleEndian = TargetLittleEndian
+		  
+		  const kTargetSize as integer = 8192 * 2
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    var s as string = i.ToString( "00" )
+		    var l as integer = s.Bytes
+		    
+		    while l < kTargetSize
+		      s = s + s
+		      l = l + l
+		    wend
+		    
+		    s = s + "|"
+		    
+		    var data as variant = s : bs
+		    tp.Add i : data
+		  next
+		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
+		  tp.Wait
+		  
+		  bs.Position = 0
+		  var contents as string = bs.Read( bs.Length )
+		  
+		  bs.Close
+		  bs = nil
+		  
+		  file.Remove
+		  file = nil
+		  
+		  var arr() as string = contents.SplitBytes( "|" )
+		  var arrLastIndex as integer = arr.LastIndex
+		  Assert.AreEqual kLastJobIndex + 1, arrLastIndex
+		  call arr.Pop
+		  
+		  arr.Sort
+		  
+		  var expected as integer = kTargetSize / 2 + 1
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    var item as string = arr( i )
+		    var val as string = item.Left( 2 )
+		    Assert.AreEqual i, val.ToInteger
+		    
+		    var parts() as string = item.Split( val )
+		    var partCount as integer = parts.Count
+		    Assert.AreEqual expected, partCount
+		  next
+		  
+		  CheckResults
+		  
+		  Finally
+		    if bs isa object then
+		      bs.Close
+		      bs = nil
+		    end if
+		    
+		    if file isa object then
+		      try
+		        file.Remove
+		      end try
+		      file = nil
+		    end if
+		    
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub BinaryStreamReadRunner(index As Integer, data As Variant)
 		  #pragma unused index
 		  
@@ -90,7 +181,7 @@ Inherits TestGroup
 		  
 		  var file as FolderItem = SpecialFolder.Temporary.Child( kFileName )
 		  
-		  var bs as BinaryStream = BinaryStream.Create( file )
+		  var bs as BinaryStream = BinaryStream.Create( file, true )
 		  bs.LittleEndian = TargetLittleEndian
 		  
 		  for i as integer = 0 to kLastJobIndex
@@ -192,6 +283,7 @@ Inherits TestGroup
 		  for loops as integer = 1 to 10
 		    for i as integer = 0 to size - 1 step 8
 		      p.Int64( i ) = i
+		      mb.Int64Value( i ) = i
 		    next
 		    
 		    for i as integer = 0 to size - 1 step 8
