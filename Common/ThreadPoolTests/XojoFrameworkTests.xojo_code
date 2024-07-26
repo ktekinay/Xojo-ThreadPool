@@ -124,7 +124,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
+	#tag Method, Flags = &h21, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit)) or  (TargetAndroid and (Target64Bit))
 		Private Sub RGBSurfaceRunner(index As Integer, data As Variant)
 		  var p as Picture = data
 		  
@@ -134,7 +134,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit)) or  (TargetAndroid and (Target64Bit))
 		Sub RGBSurfaceTest()
 		  var p as new Picture( 1, kLastJobIndex + 1, 32 )
 		  

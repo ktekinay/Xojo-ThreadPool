@@ -11,6 +11,21 @@ Inherits ThreadPool
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Shared Sub InitializeTestGroups(controller As TestController)
+		  Var group As TestGroup
+		  
+		  group = new ThreadPoolCooperativeTests( controller, "Cooperative ThreadPool" )
+		  group = new ThreadPoolPreemptiveTests( controller, "Preemptive ThreadPool" )
+		  'group.IncludeGroup = false
+		  
+		  group = new ThreadSafeVariantArrayTests( controller, "ThreadSafeVariantArray")
+		  
+		  group = new XojoFrameworkTests( controller, "Xojo Framework" )
+		  
+		End Sub
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h0
 		TestName As String
@@ -105,18 +120,6 @@ Inherits ThreadPool
 			InitialValue="8"
 			Type="Integer"
 			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="Type"
-			Visible=false
-			Group="Behavior"
-			InitialValue="Thread.Types.Preemptive"
-			Type="Thread.Types"
-			EditorType="Enum"
-			#tag EnumValues
-				"0 - Cooperative"
-				"1 - Preemptive"
-			#tag EndEnumValues
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="RemainingInQueue"
