@@ -10,6 +10,103 @@ Inherits TestGroup
 
 
 	#tag Method, Flags = &h21
+		Private Sub BinaryStreamReadRunner(index As Integer, data As Variant)
+		  #pragma unused index
+		  
+		  var bs as BinaryStream = data
+		  
+		  var readInt as integer = bs.ReadInt32
+		  
+		  Store readInt, nil, true
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub BinaryStreamReadTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf BinaryStreamReadRunner )
+		  
+		  const kFileName as string = "TPBinaryStreamRead.txt"
+		  
+		  var file as FolderItem = SpecialFolder.Temporary.Child( kFileName )
+		  var bs as BinaryStream = BinaryStream.Create( file, true )
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    bs.WriteInt32 i
+		  next
+		  
+		  bs.Close
+		  bs = nil
+		  
+		  bs = BinaryStream.Open( file )
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    tp.Add i : bs
+		  next
+		  
+		  tp.Wait
+		  
+		  bs.Close
+		  File.Remove
+		  
+		  CheckResults
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub BinaryStreamWriteRunner(index As Integer, data As Variant)
+		  var bs as BinaryStream = data
+		  
+		  bs.WriteInt32 index
+		  
+		  Store index, nil, true
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub BinaryStreamWriteTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf BinaryStreamWriteRunner )
+		  
+		  const kFileName as string = "TPBinaryStreamWrite.txt"
+		  
+		  var file as FolderItem = SpecialFolder.Temporary.Child( kFileName )
+		  
+		  var bs as BinaryStream = BinaryStream.Create( file )
+		  bs.LittleEndian = TargetLittleEndian
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    tp.Add i : bs
+		  next
+		  
+		  tp.Wait
+		  
+		  bs.Position = 0
+		  var mb as MemoryBlock = bs.Read( bs.Length )
+		  mb.LittleEndian = TargetLittleEndian
+		  
+		  bs.Close
+		  File.Remove
+		  
+		  var arr( kLastJobIndex ) as integer
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    var value as integer = mb.Int32Value( i * 4 )
+		    arr( i ) = value
+		  next
+		  
+		  arr.Sort
+		  
+		  for i as integer = 0 to arr.LastIndex
+		    Assert.AreEqual i, arr( i )
+		  next
+		  
+		  CheckResults
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub CheckResults()
 		  for each p as pair in Results
 		    Assert.IsTrue p.Right, p.Left
@@ -280,7 +377,7 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Sub Store(index As Integer, source As Variant, result As Variant)
+		Private Sub Store(index As Integer, source As Variant, result As Boolean)
 		  if Results.Count = 0 then
 		    Locker.Signal
 		    if Results.Count = 0 then
