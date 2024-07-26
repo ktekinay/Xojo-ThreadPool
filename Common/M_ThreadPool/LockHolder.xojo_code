@@ -26,7 +26,11 @@ Private Class LockHolder
 		  if S isa object then
 		    try
 		      S.Release
+		      #if TargetMobile 
+		    catch err as Xojo.Threading.IllegalLockingException
+		      #else
 		    catch err as IllegalLockingException
+		      #endif
 		      // Wasn't locked
 		    end try
 		    
@@ -36,7 +40,11 @@ Private Class LockHolder
 		  if CS isa object then
 		    try
 		      CS.Leave
+		      #if TargetMobile 
+		    catch err as Xojo.Threading.IllegalLockingException
+		      #else
 		    catch err as IllegalLockingException
+		      #endif
 		      // Wasn't locked
 		    end try
 		    

@@ -88,13 +88,19 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  RaiseQueueEventsTimerLock.Type = mType
 		  
 		  RaiseQueueEventsTimer = new Timer
-		  AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
-		  
+		  #if TargetMobile
+		    AddHandler RaiseQueueEventsTimer.Run, WeakAddressOf RaiseQueueEventsTimer_Action
+		  #else
+		    AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
+		  #endif
 		  RaiseQueueEventsTimer.Period = 1
 		  
 		  RaiseUserInterfaceUpdateTimer = new Timer
-		  AddHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
-		  
+		  #if TargetMobile
+		    AddHandler RaiseUserInterfaceUpdateTimer.Run, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
+		  #else
+		    AddHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
+		  #endif
 		  RaiseUserInterfaceUpdateTimer.Period = 50
 		  
 		End Sub
@@ -122,12 +128,19 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off
 		  lock = nil
 		  
-		  RemoveHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
+		  #if TargetMobile
+		    RemoveHandler RaiseQueueEventsTimer.Run, WeakAddressOf RaiseQueueEventsTimer_Action
+		  #else
+		    RemoveHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
+		  #endif
 		  RaiseQueueEventsTimer = nil
 		  
 		  RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
-		  RemoveHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
-		  
+		  #if TargetMobile
+		    RemoveHandler RaiseUserInterfaceUpdateTimer.Run, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
+		  #else
+		    RemoveHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -702,7 +715,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 			Name="QueueLimit"
 			Visible=false
 			Group="Behavior"
-			InitialValue=""
+			InitialValue="0"
 			Type="Integer"
 			EditorType=""
 		#tag EndViewProperty
