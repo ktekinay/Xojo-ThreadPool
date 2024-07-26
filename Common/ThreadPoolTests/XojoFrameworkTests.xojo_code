@@ -44,13 +44,30 @@ Inherits TestGroup
 		    tp.Add i : bs
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  bs.Close
-		  File.Remove
+		  bs = nil
+		  
+		  file.Remove
+		  file = nil
 		  
 		  CheckResults
 		  
+		  Finally
+		    if bs isa object then
+		      bs.Close
+		      bs = nil
+		    end if
+		    
+		    if file isa object then
+		      try
+		        file.Remove
+		      end try
+		      file = nil
+		    end if
+		    
 		End Sub
 	#tag EndMethod
 
@@ -80,6 +97,7 @@ Inherits TestGroup
 		    tp.Add i : bs
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  bs.Position = 0
@@ -87,7 +105,10 @@ Inherits TestGroup
 		  mb.LittleEndian = TargetLittleEndian
 		  
 		  bs.Close
-		  File.Remove
+		  bs = nil
+		  
+		  file.Remove
+		  file = nil
 		  
 		  var arr( kLastJobIndex ) as integer
 		  
@@ -103,6 +124,20 @@ Inherits TestGroup
 		  next
 		  
 		  CheckResults
+		  
+		  Finally
+		    if bs isa object then
+		      bs.Close
+		      bs = nil
+		    end if
+		    
+		    if file isa object then
+		      try
+		        file.Remove
+		      end try
+		      file = nil
+		    end if
+		    
 		End Sub
 	#tag EndMethod
 
@@ -140,6 +175,7 @@ Inherits TestGroup
 		    tp.Add i : nil
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  CheckResults
@@ -180,6 +216,7 @@ Inherits TestGroup
 		    tp.Add i : nil
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  CheckResults
@@ -215,6 +252,7 @@ Inherits TestGroup
 		    tp.Add i : s
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  CheckResults
@@ -241,6 +279,7 @@ Inherits TestGroup
 		    tp.Add h : p
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  CheckResults
@@ -279,6 +318,7 @@ Inherits TestGroup
 		    tp.Add i : mb
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  CheckResults
@@ -338,6 +378,7 @@ Inherits TestGroup
 		    tp.Add i : file
 		  next
 		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
 		  tp.Wait
 		  
 		  CheckResults
