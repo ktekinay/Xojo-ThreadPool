@@ -366,6 +366,7 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h0
 		Sub PostgreSQLTest()
+		  const kDatabaseName as string = "unittests"
 		  const kUsername as string = "unittests"
 		  const kPassword as string = "unittests"
 		  const kHost as string = "localhost"
@@ -373,6 +374,7 @@ Inherits TestGroup
 		  var tp as new DelegateRunnerThreadPool( AddressOf DatabaseTestsRunner )
 		  
 		  var db as new PostgreSQLDatabase
+		  db.DatabaseName = kDatabaseName
 		  db.UserName = kUsername
 		  db.Password = kPassword
 		  db.Host = kHost
@@ -386,6 +388,7 @@ Inherits TestGroup
 		  
 		  for i as integer = 0 to kLastJobIndex
 		    var threadDb as new PostgreSQLDatabase
+		    threadDb.DatabaseName = kDatabaseName
 		    threadDb.UserName = kUsername
 		    threadDb.Password = kPassword
 		    threadDb.Host = kHost
@@ -416,6 +419,7 @@ Inherits TestGroup
 		    db = nil
 		    
 		    db = new PostgreSQLDatabase
+		    db.DatabaseName = kDatabaseName
 		    db.UserName = kUsername
 		    db.Password = kPassword
 		    db.Host = kHost
