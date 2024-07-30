@@ -241,6 +241,55 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub DatabaseTestsRunner(index As Integer, data As Variant)
+		  var db as Database = data
+		  
+		  if not db.Connect then
+		    System.DebugLog "Could not connect"
+		    return
+		  end if
+		  
+		  db.ExecuteSQL "INSERT INTO preemptive_thread_test (id, s) VALUES ($1, $2)", index, index.ToString
+		  
+		  var rs as RowSet = db.SelectSQL( "SELECT id, s FROM preemptive_thread_test WHERE id = $1", index )
+		  
+		  //
+		  // As of this writing, RowSet is not thread-safe, so access to 
+		  // column values must be LOCKED UNIVERSALLY if there is a chance
+		  // that a preemptive thread is accessing a RowSet.
+		  //
+		  // Due to this limitation, do not access a RowSet from both
+		  // preemptive and cooperative threads simultaneously.
+		  //
+		  // As an alternative, use Type-switching to make sure this 
+		  // Thread is running cooperatively. (See commented code below.)
+		  //
+		   
+		  'var t as Thread = Thread.Current
+		  'var originalType as Thread.Types = t.Type
+		  '
+		  't.Type = Thread.Types.Cooperative
+		  
+		  ThreadPoolTestBase.UniversalRowSetLock.Signal
+		  
+		  var retrievedIndex as integer = rs.Column( "id" ).IntegerValue
+		  var retrievedString as string = rs.Column( "s" ).StringValue
+		  
+		  ThreadPoolTestBase.UniversalRowSetLock.Release
+		  
+		  't.Type = originalType
+		  
+		  if rs.RowCount = 1 and retrievedIndex = index and retrievedString = index.ToString then
+		    Store index, nil, true
+		  else
+		    Store index, nil, false
+		  end if
+		  
+		  db.Close
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub HandledExceptionRunner(index As Integer, data As Variant)
 		  #pragma BreakOnExceptions false
 		  
@@ -312,6 +361,78 @@ Inherits TestGroup
 		  tp.Wait
 		  
 		  CheckResults
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub PostgreSQLTest()
+		  const kUsername as string = "unittests"
+		  const kPassword as string = "unittests"
+		  const kHost as string = "localhost"
+		  
+		  var tp as new DelegateRunnerThreadPool( AddressOf DatabaseTestsRunner )
+		  
+		  var db as new PostgreSQLDatabase
+		  db.UserName = kUsername
+		  db.Password = kPassword
+		  db.Host = kHost
+		  
+		  if not db.Connect then
+		    Assert.Message "A PostgreSQL database must be running locally. See test code for expected username/password."
+		    return
+		  end if
+		  
+		  db.ExecuteSQL( "CREATE TABLE IF NOT EXISTS preemptive_thread_test (id INTEGER PRIMARY KEY, s TEXT)" )
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    var threadDb as new PostgreSQLDatabase
+		    threadDb.UserName = kUsername
+		    threadDb.Password = kPassword
+		    threadDb.Host = kHost
+		    
+		    tp.Add i : threadDb
+		  next
+		  
+		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
+		  tp.Wait
+		  
+		  CheckResults
+		  
+		  for l as integer = 1 to 2
+		    var rs as RowSet = db.SelectSQL( "SELECT id, s FROM preemptive_thread_test ORDER BY id" )
+		    
+		    Assert.AreEqual kLastJobIndex + 1, rs.RowCount, "rs.RowCount"
+		    
+		    var checkValue as integer
+		    
+		    for each row as DatabaseRow in rs
+		      Assert.AreEqual rs.Column( "id" ).IntegerValue, checkValue
+		      Assert.AreEqual rs.Column( "s" ).StringValue, checkValue.ToString
+		      
+		      checkValue = checkValue + 1
+		    next
+		    
+		    db.Close
+		    db = nil
+		    
+		    db = new PostgreSQLDatabase
+		    db.UserName = kUsername
+		    db.Password = kPassword
+		    db.Host = kHost
+		    
+		    Assert.IsTrue db.Connect
+		  next
+		  
+		  Finally
+		    if db isa object then
+		      try
+		        db.ExecuteSQL "DROP TABLE preemptive_thread_test"
+		      end try
+		      
+		      db.Close
+		      db = nil
+		    end if
+		    
 		End Sub
 	#tag EndMethod
 
@@ -422,52 +543,30 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
-		Private Sub SQLiteRunner(index As Integer, data As Variant)
-		  var db as new SQLiteDatabase
-		  db.DatabaseFile = data
-		  db.WriteAheadLogging = true
-		  
-		  if not db.Connect then
-		    System.DebugLog "Could not connect"
-		    return
-		  end if
-		  
-		  db.ExecuteSQL "INSERT INTO data (id, s) VALUES (?, ?)", index, index.ToString
-		  
-		  var rs as RowSet = db.SelectSQL( "SELECT id, s FROM data WHERE id = ?", index )
-		  
-		  if rs.RowCount = 1 and rs.Column( "id" ).IntegerValue = index and rs.Column( "s" ).StringValue = index.ToString then
-		    Store index, nil, true
-		  else
-		    Store index, nil, false
-		  end if
-		  
-		  db.Close
-		End Sub
-	#tag EndMethod
-
 	#tag Method, Flags = &h0
 		Sub SQLiteTest()
-		  var tp as new DelegateRunnerThreadPool( AddressOf SQLiteRunner )
+		  var tp as new DelegateRunnerThreadPool( AddressOf DatabaseTestsRunner )
 		  
 		  var folder as FolderItem = SpecialFolder.Temporary.Child( System.Microseconds.ToString( "#0" ) )
 		  folder.CreateFolder
 		  
 		  var file as FolderItem = folder.Child( "test.sqlite" )
 		  
-		  var sql as new SQLiteDatabase
-		  sql.DatabaseFile = file
-		  sql.WriteAheadLogging = true
-		  sql.CreateDatabase()
+		  var db as new SQLiteDatabase
+		  db.DatabaseFile = file
+		  db.WriteAheadLogging = true
+		  db.CreateDatabase()
 		  
-		  Assert.IsTrue sql.Connect
+		  Assert.IsTrue db.Connect
 		  
-		  sql.ExecuteSQL( "CREATE TABLE data (id INTEGER PRIMARY KEY, s TEXT)" )
-		  
+		  db.ExecuteSQL( "CREATE TABLE preemptive_thread_test (id INTEGER PRIMARY KEY, s TEXT)" )
 		  
 		  for i as integer = 0 to kLastJobIndex
-		    tp.Add i : file
+		    var threadDb as new SQLiteDatabase
+		    threadDb.WriteAheadLogging = true
+		    threadDb.DatabaseFile = file
+		    
+		    tp.Add i : threadDb
 		  next
 		  
 		  Assert.Message "ActiveJobs = " + tp.ActiveJobs.ToString
@@ -476,7 +575,7 @@ Inherits TestGroup
 		  CheckResults
 		  
 		  for l as integer = 1 to 2
-		    var rs as RowSet = sql.SelectSQL( "SELECT id, s FROM data ORDER BY id" )
+		    var rs as RowSet = db.SelectSQL( "SELECT id, s FROM preemptive_thread_test ORDER BY id" )
 		    
 		    Assert.AreEqual kLastJobIndex + 1, rs.RowCount
 		    
@@ -489,20 +588,20 @@ Inherits TestGroup
 		      checkValue = checkValue + 1
 		    next
 		    
-		    sql.Close
-		    sql = nil
+		    db.Close
+		    db = nil
 		    
-		    sql = new SQLiteDatabase
-		    sql.DatabaseFile = file
-		    sql.WriteAheadLogging = true
+		    db = new SQLiteDatabase
+		    db.DatabaseFile = file
+		    db.WriteAheadLogging = true
 		    
-		    Assert.IsTrue sql.Connect
+		    Assert.IsTrue db.Connect
 		  next
 		  
 		  Finally
-		    if sql isa object then
-		      sql.Close
-		      sql = nil
+		    if db isa object then
+		      db.Close
+		      db = nil
 		    end if
 		    
 		    folder.RemoveFolderAndContents

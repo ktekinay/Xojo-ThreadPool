@@ -31,6 +31,22 @@ Inherits ThreadPool
 		TestName As String
 	#tag EndProperty
 
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  static lock as Semaphore
+			  
+			  if lock is nil then
+			    lock = new Semaphore
+			    lock.Type = Thread.Types.Preemptive
+			  end if
+			  
+			  return lock
+			End Get
+		#tag EndGetter
+		Shared UniversalRowSetLock As Semaphore
+	#tag EndComputedProperty
+
 
 	#tag ViewBehavior
 		#tag ViewProperty
