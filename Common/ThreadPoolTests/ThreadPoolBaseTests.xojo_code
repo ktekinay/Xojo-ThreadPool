@@ -159,6 +159,8 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h21
 		Private Sub EventsTester_QueueAvailable(sender As ThreadPool)
+		  #pragma unused sender
+		  
 		  EventsTestFeeder
 		  
 		End Sub
@@ -166,6 +168,8 @@ Inherits TestGroup
 
 	#tag Method, Flags = &h21
 		Private Sub EventsTester_QueueDrained(sender As ThreadPool)
+		  #pragma unused sender
+		  
 		  EventsTester.Wait
 		  
 		End Sub
