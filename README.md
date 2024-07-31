@@ -84,17 +84,29 @@ arr.RemoveAll
 MessageBox arr.IndexOf( 1 ).ToString
 ```
 
-## Who Did This?!?
+# Dos and Don'ts
+
+- **Do** use `Semaphore` and `CriticalSection` generously to control flow of data that two threads might be manipulating.
+- **Don't** assume any order and remember that a condition can change even as you are checking it. For example, `if this and that then` may evaluate `this` and `that` as true even as some other Thread changes `this` to false before `that` is even checked.
+- **Do** use an individual `Database` instance for each Thread. Sharing a `Database` among Threads is a no good, very bad, idea. If you are using an in-memory `SQLiteDatabase` and cannot have more than one instance, protect access to it using `Semaphore` or `CriticalSection`.
+- **Don't** share a `RegEx` or any class that maintains state among Threads. Let each Thread create its own or pass in an instance as part of your data.
+- **Do** test heavily. Even the simplest code can lead to odd edge cases that you will only find with extensive testing.
+- **Do** expect hard crashes during development. It is the nature of preemptive threads where things can happen simultaneously.
+- **Don't** share resources where it's not required. For example, if you are updating a `Picture` in Threads that you are displaying in a `Canvas` in real-time, create a copy of the `Picture` and send back information that can be used to update the original.
+- **Do** mind memory usage by using the `QueueLimit` property. For example, assuming `MaximumJobs` is 10 (a maximum of 10 Threads at a time), you can manipulate the contents of a file by setting `QueueLimit` to 100 and reading the file in 1 MB chunks. This will ensure that you only load about 110 MB into memory (100 MB in the queue and 10 MB assigned to the Threads) even if the file is far larger.
+- **Do** set `QueueLimit` to some multiple of `MaximumJobs` or `System.CoreCount`. The idea is to keep sufficient data on hand so the Threads can keep processing. (Setting it to 0, the default, means "no limit".)
+
+# Who Did This?!?
 
 This project was created by and is maintained by Kem Tekinay (ktekinay@mactechnologies dot com).
 
-## Comments and Contributions
+# Comments and Contributions
 
 All contributions to this project will be gratefully considered. Fork this repo to your own, then submit your changes via a Pull Request.
 
 All comments are also welcome.
 
-## Release Notes
+# Release Notes
 
 **1.0** (Aug. 1, 2024)
 
