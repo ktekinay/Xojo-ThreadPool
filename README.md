@@ -57,3 +57,45 @@ If you want to prematurely stop processing, you may call `Stop` which will, in e
 
 Note: Before destroying a `ThreadPool`, you must call `Stop` before it goes out of scope if there is a chance it is still running. It is safe to call `Stop` even if a `ThreadPool` is idle.
 
+### ThreadSafeVariantArray
+
+The included `ThreadSafeVariantArray` is meant to support `ThreadPool` but may be used in your own projects. You must instantiate it using `new`, but then access it as if it were a traditional `Variant` array.
+
+Example:
+
+```
+var arr as new ThreadSafeVariantArray
+
+arr.Add 1
+arr.Add 2
+
+arr.ResizeTo 9
+
+arr( 3 ) = false
+
+MessageBox arr.Count.ToString
+
+arr.Sort AddressOf someSortDelegate
+
+arr.RemoveAt 8
+
+arr.RemoveAll
+
+MessageBox arr.IndexOf( 1 ).ToString
+```
+
+## Who Did This?!?
+
+This project was created by and is maintained by Kem Tekinay (ktekinay@mactechnologies dot com).
+
+## Comments and Contributions
+
+All contributions to this project will be gratefully considered. Fork this repo to your own, then submit your changes via a Pull Request.
+
+All comments are also welcome.
+
+## Release Notes
+
+**1.0** (Aug. 1, 2024)
+
+  - Initial release.
