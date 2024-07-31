@@ -47,6 +47,10 @@ The safest way to return data is by calling `AddUserInterfaceUpdate` and impleme
 
 You may also choose to update some shared property or array. If so, you _must_ protect that property through a `Semaphore` or `CriticalSection`. Remember to set the locking class's `Type` to match `ThreadPool.Type`.
 
+Note that you may update an array without a `Semaphore` or `CriticalSection` if you are certain your preemptive threads are writing to different indexes. You may do that by initially sizing the array, then sending a unique index to `ThreadPool` as part of its data. For example, `tp.Add index : myData` or `tp.Add new Dictionary("index" : index, "data1" : data1, "data2" : data2)`.
+
+The same holds true for a `MemoryBlock`.
+
 ### Stopping
 
 If you want to prematurely stop processing, you may call `Stop` which will, in effect, cancel all further processing.
