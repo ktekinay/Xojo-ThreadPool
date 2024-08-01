@@ -530,7 +530,15 @@ Inherits TestGroup
 		Sub SQLiteTest()
 		  var tp as new DelegateRunnerThreadPool( AddressOf DatabaseTestsRunner )
 		  
-		  var folder as FolderItem = SpecialFolder.Temporary.Child( System.Microseconds.ToString( "#0" ) )
+		  var folder as FolderItem
+		  
+		  #if TargetMobile then
+		    folder = SpecialFolder.Documents
+		  #else
+		    folder = SpecialFolder.Temporary
+		  #endif
+		  
+		  folder = folder.Child( System.Microseconds.ToString( "#0" ) )
 		  folder.CreateFolder
 		  
 		  var file as FolderItem = folder.Child( "test.sqlite" )
