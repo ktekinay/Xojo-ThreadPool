@@ -22,6 +22,30 @@ Inherits ThreadPoolBaseTests
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Sub TypeChangeTest()
+		  var tp as new EndlessThreadPool
+		  tp.Add 1
+		  
+		  Assert.IsFalse tp.IsFinished
+		  
+		  tp.Type = Thread.Types.Preemptive
+		  Assert.Pass "Ignores type change when not really a change"
+		  
+		  #pragma BreakOnExceptions false
+		  try
+		    tp.Type = Thread.Types.Cooperative
+		    Assert.Fail "Allowed type change to cooperative"
+		  catch err as RuntimeException
+		    Assert.Pass
+		  end try
+		  #pragma BreakOnExceptions default
+		  
+		  tp.Stop
+		  
+		End Sub
+	#tag EndMethod
+
 
 	#tag ViewBehavior
 		#tag ViewProperty
