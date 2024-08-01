@@ -9,7 +9,7 @@ Inherits TestGroup
 	#tag EndEvent
 
 
-	#tag Method, Flags = &h21
+	#tag Method, Flags = &h21, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit))
 		Private Sub BinaryStreamBigWriteRunner(index As Integer, data As Variant)
 		  var p as pair = data
 		  
@@ -23,7 +23,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit))
 		Sub BinaryStreamBigWriteTest()
 		  var tp as new DelegateRunnerThreadPool( AddressOf BinaryStreamBigWriteRunner )
 		  
@@ -100,7 +100,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
+	#tag Method, Flags = &h21, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit))
 		Private Sub BinaryStreamReadRunner(index As Integer, data As Variant)
 		  #pragma unused index
 		  
@@ -113,7 +113,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit))
 		Sub BinaryStreamReadTest()
 		  var tp as new DelegateRunnerThreadPool( AddressOf BinaryStreamReadRunner )
 		  
@@ -162,7 +162,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
+	#tag Method, Flags = &h21, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit))
 		Private Sub BinaryStreamWriteRunner(index As Integer, data As Variant)
 		  var bs as BinaryStream = data
 		  
@@ -173,7 +173,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit))
 		Sub BinaryStreamWriteTest()
 		  var tp as new DelegateRunnerThreadPool( AddressOf BinaryStreamWriteRunner )
 		  
@@ -341,7 +341,7 @@ Inherits TestGroup
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit))
 		Sub PostgreSQLTest()
 		  const kDatabaseName as string = "unittests"
 		  const kUsername as string = "unittests"
