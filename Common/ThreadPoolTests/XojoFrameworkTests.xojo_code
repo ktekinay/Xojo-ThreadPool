@@ -4,7 +4,9 @@ Inherits TestGroup
 	#tag Event
 		Sub Setup()
 		  Locker = new Semaphore
-		  Locker.Type = Thread.Types.Preemptive
+		  #if XojoVersion >= 2024.03 then
+		    Locker.Type = Thread.Types.Preemptive
+		  #endif
 		End Sub
 	#tag EndEvent
 

@@ -2,33 +2,39 @@
 Protected Class ThreadPoolCooperativeTests
 Inherits ThreadPoolBaseTests
 	#tag Event
-		Function GetType() As Thread.Types
-		  return Thread.Types.Cooperative
+		Function GetType() As Variant
+		  #if XojoVersion >= 2024.03 then
+		    return Thread.Types.Cooperative
+		  #else
+		    return 0
+		  #endif
 		End Function
 	#tag EndEvent
 
 
 	#tag Method, Flags = &h0
 		Sub ChangeTypeTest()
-		  var tp as new EndlessThreadPool
-		  tp.Type = Thread.Types.Cooperative
-		  
-		  tp.MaximumJobs = 1
-		  tp.Add 1
-		  
-		  tp.Type = Thread.Types.Cooperative
-		  Assert.Pass "No change to Type is fine"
-		  
-		  #pragma BreakOnExceptions false
-		  try
-		    tp.Type = Thread.Types.Preemptive
-		    Assert.Fail "Did not raise expected exception"
-		  catch err as RuntimeException
-		    Assert.IsTrue err.Message.Contains( "type" )
-		  end try
-		  #pragma BreakOnExceptions default
-		  
-		  tp.Stop
+		  #if XojoVersion >= 2024.03 then
+		    var tp as new EndlessThreadPool
+		    tp.Type = Thread.Types.Cooperative
+		    
+		    tp.MaximumJobs = 1
+		    tp.Add 1
+		    
+		    tp.Type = Thread.Types.Cooperative
+		    Assert.Pass "No change to Type is fine"
+		    
+		    #pragma BreakOnExceptions false
+		    try
+		      tp.Type = Thread.Types.Preemptive
+		      Assert.Fail "Did not raise expected exception"
+		    catch err as RuntimeException
+		      Assert.IsTrue err.Message.Contains( "type" )
+		    end try
+		    #pragma BreakOnExceptions default
+		    
+		    tp.Stop
+		  #endif
 		End Sub
 	#tag EndMethod
 

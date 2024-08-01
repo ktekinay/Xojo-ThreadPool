@@ -2,11 +2,42 @@
 Protected Class ThreadPoolPreemptiveTests
 Inherits ThreadPoolBaseTests
 	#tag Event
-		Function GetType() As Thread.Types
-		  return Thread.Types.Preemptive
+		Function GetType() As Variant
+		  #if XojoVersion >= 2024.03 then
+		    return Thread.Types.Preemptive
+		  #else
+		    return 1
+		  #endif
+		  
 		End Function
 	#tag EndEvent
 
+
+	#tag Method, Flags = &h0
+		Sub ChangeTypeTest()
+		  #if XojoVersion >= 2024.03 then
+		    var tp as new EndlessThreadPool
+		    tp.Type = Thread.Types.Preemptive
+		    
+		    tp.MaximumJobs = 1
+		    tp.Add 1
+		    
+		    tp.Type = Thread.Types.Preemptive
+		    Assert.Pass "No change to Type is fine"
+		    
+		    #pragma BreakOnExceptions false
+		    try
+		      tp.Type = Thread.Types.Cooperative
+		      Assert.Fail "Did not raise expected exception"
+		    catch err as RuntimeException
+		      Assert.IsTrue err.Message.Contains( "type" )
+		    end try
+		    #pragma BreakOnExceptions default
+		    
+		    tp.Stop
+		  #endif
+		End Sub
+	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub DefaultQueueLimitTest()
@@ -17,32 +48,10 @@ Inherits ThreadPoolBaseTests
 
 	#tag Method, Flags = &h0
 		Sub DefaultTypeTest()
-		  var tp as new ThreadPool
-		  Assert.IsTrue tp.Type = Thread.Types.Preemptive
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub TypeChangeTest()
-		  var tp as new EndlessThreadPool
-		  tp.Add 1
-		  
-		  Assert.IsFalse tp.IsFinished
-		  
-		  tp.Type = Thread.Types.Preemptive
-		  Assert.Pass "Ignores type change when not really a change"
-		  
-		  #pragma BreakOnExceptions false
-		  try
-		    tp.Type = Thread.Types.Cooperative
-		    Assert.Fail "Allowed type change to cooperative"
-		  catch err as RuntimeException
-		    Assert.Pass
-		  end try
-		  #pragma BreakOnExceptions default
-		  
-		  tp.Stop
-		  
+		  #if XojoVersion >= 2024.03 then
+		    var tp as new ThreadPool
+		    Assert.IsTrue tp.Type = Thread.Types.Preemptive
+		  #endif
 		End Sub
 	#tag EndMethod
 

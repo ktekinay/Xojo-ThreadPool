@@ -97,7 +97,11 @@ Inherits TestGroup
 		  Assert.IsTrue tp.ElapsedMicroseconds = 0.0
 		  
 		  tp.QueueLimit = 0
-		  tp.MaximumJobs = System.CoreCount - 1
+		  #if XojoVersion >= 2024.03 then
+		    tp.MaximumJobs = System.CoreCount - 1
+		  #else
+		    tp.MaximumJobs = 4
+		  #endif
 		  
 		  for i as integer = 1051 to 1100
 		    tp.Add i
@@ -458,7 +462,7 @@ Inherits TestGroup
 
 
 	#tag Hook, Flags = &h0
-		Event GetType() As Thread.Types
+		Event GetType() As Variant
 	#tag EndHook
 
 

@@ -24,9 +24,13 @@ Implements Iterable
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Constructor(type As Thread.Types = Thread.Types.Preemptive)
+		Sub Constructor(type As Variant = kTypePreemptive)
 		  Locker = new Semaphore
-		  Locker.Type = type
+		  #if XojoVersion >= 2024.03 then
+		    Locker.Type = type
+		  #else
+		    #pragma unused type
+		  #endif
 		  
 		End Sub
 	#tag EndMethod
@@ -234,6 +238,13 @@ Implements Iterable
 	#tag Property, Flags = &h1
 		Protected Locker As Semaphore
 	#tag EndProperty
+
+
+	#tag Constant, Name = kTypeCooperative, Type = Double, Dynamic = False, Default = \"0", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = kTypePreemptive, Type = Double, Dynamic = False, Default = \"1", Scope = Public
+	#tag EndConstant
 
 
 	#tag ViewBehavior

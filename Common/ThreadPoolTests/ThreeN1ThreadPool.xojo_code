@@ -27,7 +27,9 @@ Inherits ThreadPoolTestBase
 		  
 		  AddUserInterfaceUpdate data : nil
 		  
-		  ResultLock.Type = self.Type
+		  #if XojoVersion >= 2024.03 then
+		    ResultLock.Type = self.Type
+		  #endif
 		  
 		  ResultLock.Enter
 		  
@@ -110,18 +112,6 @@ Inherits ThreadPoolTestBase
 			InitialValue=""
 			Type="String"
 			EditorType="MultiLineEditor"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="Type"
-			Visible=false
-			Group="Behavior"
-			InitialValue="Thread.Types.Preemptive"
-			Type="Thread.Types"
-			EditorType="Enum"
-			#tag EnumValues
-				"0 - Cooperative"
-				"1 - Preemptive"
-			#tag EndEnumValues
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="RemainingInQueue"
