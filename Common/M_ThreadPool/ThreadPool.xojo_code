@@ -5,7 +5,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Sub Add(data As Variant)
 		  while not TryAdd( data )
 		  wend
-		  
+
 		End Sub
 	#tag EndMethod
 
@@ -15,38 +15,38 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  t.Type = mType
 		  t.MyThreadPool = self
 		  t.ID = NextThreadID
-		  
+
 		  NextThreadID = NextThreadID + 1
-		  
+
 		  t.Start
-		  
+
 		  var lock as new LockHolder( PoolLock )
 		  Pool.Add t
 		  lock = nil
-		  
+
 		  while t.ThreadState = Thread.ThreadStates.NotRunning
 		  wend
-		  
+
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub AddUserInterfaceUpdate(data As Dictionary)
 		  var dict as new Dictionary
-		  
+
 		  var keys() as variant = data.Keys
 		  var values() as variant = data.Values
-		  
+
 		  for i as integer = 0 to keys.LastIndex
 		    dict.Value( keys( i ) ) = values( i )
 		  next
-		  
+
 		  var lock as new LockHolder( UIUpdatesLock )
-		  
+
 		  UIUpdates.Add dict
-		  
+
 		  lock = nil
-		  
+
 		  StartUserInteraceUpdateTimer
 		End Sub
 	#tag EndMethod
@@ -60,17 +60,17 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h21
 		Private Sub AddUserInterfaceUpdate(data() As Pair)
 		  var dict as new Dictionary
-		  
+
 		  for each p as pair in data
 		    dict.Value( p.Left ) = p.Right
 		  next
-		  
+
 		  var lock as new LockHolder( UIUpdatesLock )
-		  
+
 		  UIUpdates.Add dict
-		  
+
 		  lock = nil
-		  
+
 		  StartUserInteraceUpdateTimer
 		End Sub
 	#tag EndMethod
@@ -78,15 +78,15 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  CoreCount = System.CoreCount
-		  
+
 		  CreateQueuer
-		  
+
 		  PoolLock = new Semaphore
 		  UIUpdatesLock = new Semaphore
 		  UIUpdatesLock.Type = mType
 		  RaiseQueueEventsTimerLock = new Semaphore
 		  RaiseQueueEventsTimerLock.Type = mType
-		  
+
 		  RaiseQueueEventsTimer = new Timer
 		  #if TargetMobile
 		    AddHandler RaiseQueueEventsTimer.Run, WeakAddressOf RaiseQueueEventsTimer_Action
@@ -94,7 +94,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    AddHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
 		  #endif
 		  RaiseQueueEventsTimer.Period = 1
-		  
+
 		  RaiseUserInterfaceUpdateTimer = new Timer
 		  #if TargetMobile
 		    AddHandler RaiseUserInterfaceUpdateTimer.Run, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
@@ -102,7 +102,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    AddHandler RaiseUserInterfaceUpdateTimer.Action, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
 		  #endif
 		  RaiseUserInterfaceUpdateTimer.Period = 50
-		  
+
 		End Sub
 	#tag EndMethod
 
@@ -115,26 +115,26 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h21
 		Private Sub Destructor()
 		  IsDestructing = true
-		  
+
 		  DataQueue.IsDenied = true
-		  
+
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
 		  next
-		  
+
 		  DataQueue.RemoveAll // When this succeeds, no thread will be able to attempt to lock the queue
-		  
+
 		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
 		  RaiseQueueEventsTimer.RunMode = Timer.RunModes.Off
 		  lock = nil
-		  
+
 		  #if TargetMobile
 		    RemoveHandler RaiseQueueEventsTimer.Run, WeakAddressOf RaiseQueueEventsTimer_Action
 		  #else
 		    RemoveHandler RaiseQueueEventsTimer.Action, WeakAddressOf RaiseQueueEventsTimer_Action
 		  #endif
 		  RaiseQueueEventsTimer = nil
-		  
+
 		  RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
 		  #if TargetMobile
 		    RemoveHandler RaiseUserInterfaceUpdateTimer.Run, WeakAddressOf RaiseUserInterfaceUpdateTimer_Action
@@ -149,16 +149,16 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  if IsClosed or ActiveJobs = 0 then
 		    return
 		  end if
-		  
+
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
 		  next
-		  
+
 		  PoolCleaner = new Thread
 		  AddHandler PoolCleaner.Run, AddressOf PoolCleaner_Run
-		  
+
 		  PoolCleaner.Start
-		  
+
 		End Sub
 	#tag EndMethod
 
@@ -167,31 +167,31 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  if IsDestructing then
 		    return false
 		  end if
-		  
+
 		  var result as boolean
-		  
+
 		  try
 		    if DataQueue.TrySkim( data ) then
 		      result = true
-		    else 
+		    else
 		      return false
 		    end if
-		    
+
 		  catch err as NilObjectException
 		    //
 		    // Should only happen if destructing
 		    //
 		    return false
-		    
+
 		  end try
-		  
+
 		  var lock as LockHolder = LockHolder.TryLock( RaiseQueueEventsTimerLock )
-		  
+
 		  //
 		  // If we can't get a lock, it means either another thread is already doing it or
 		  // the timer is about to run. In either case, we don't need to do it again here.
 		  //
-		  
+
 		  if lock isa object and _
 		    not IsDestructing and _
 		    not DataQueue.IsDenied and _
@@ -200,11 +200,11 @@ Implements M_ThreadPool.ThreadPoolInterface
 		    then
 		    RaiseQueueEventsTimer.RunMode = Timer.RunModes.Multiple
 		  end if
-		  
+
 		  lock = nil
-		  
+
 		  return result
-		  
+
 		End Function
 	#tag EndMethod
 
@@ -213,7 +213,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  if mWeakRef is nil then
 		    mWeakRef = new WeakRef( self )
 		  end if
-		  
+
 		  return mWeakRef
 		End Function
 	#tag EndMethod
@@ -222,46 +222,46 @@ Implements M_ThreadPool.ThreadPoolInterface
 		Private Sub PoolCleaner_Run(sender As Thread)
 		  do
 		    var lock as new LockHolder( PoolLock )
-		    
+
 		    var pool() as M_ThreadPool.PThread = self.Pool
-		    
+
 		    if pool.Count = 0 then // ActiveJobs will also attempt to lock so don't use it here
 		      EndMicroseconds = System.Microseconds
-		      
+
 		      var queue as Queuer = DataQueue
-		      
+
 		      if queue.UnprotectedCount <> 0 then
 		        raise new RuntimeException( "Data is still on the queue!" )
 		      end if
-		      
+
 		      if sender isa object then
 		        RemoveHandler sender.Run, AddressOf PoolCleaner_Run
 		        PoolCleaner = nil
-		        
+
 		        if not IsDestructing then
 		          Timer.CallLater 1, AddressOf RaiseFinishedEvent
 		        end if
 		      end if
-		      
+
 		      RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Single
-		      
+
 		      exit
 		    end if
-		    
+
 		    for i as integer = pool.LastIndex downto 0
 		      var t as M_ThreadPool.PThread = Pool( i )
-		      
+
 		      if t.ThreadState = Thread.ThreadStates.NotRunning then
 		        pool.RemoveAt i
 		      end if
 		    next
-		    
+
 		    if pool.Count = 0 then
 		      continue
 		    end if
-		    
+
 		    lock = nil
-		    
+
 		    if sender isa object then
 		      sender.Sleep 20, true
 		    end if
@@ -272,81 +272,81 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag Method, Flags = &h21
 		Private Sub RaiseFinishedEvent()
 		  RaiseEvent Finished
-		  
+
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub RaiseProcessEvent(data As Variant, sender As Thread)
 		  RaiseEvent Process( data, sender )
-		  
+
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub RaiseQueueEventsTimer_Action(sender As Timer)
 		  var lock as new LockHolder( RaiseQueueEventsTimerLock )
-		  
+
 		  sender.RunMode = Timer.RunModes.Off
-		  
+
 		  lock = nil
-		  
+
 		  if IsDestructing or IsClosed then
 		    return
 		  end if
-		  
+
 		  if WasFull and not IsQueueFull then
 		    WasFull = false
 		    RaiseEvent QueueAvailable
 		  end if
-		  
+
 		  if WasQueueLoaded and DataQueue.Count = 0 then
 		    WasQueueLoaded = false
 		    RaiseEvent QueueDrained
 		  end if
-		  
+
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub RaiseUserInterfaceUpdateTimer_Action(sender As Timer)
 		  #pragma unused sender
-		  
+
 		  var lock as new LockHolder( UIUpdatesLock )
-		  
+
 		  if UIUpdates.Count <> 0 then
 		    var uiUpdates() as Dictionary = self.UIUpdates
 		    var cleanArr() as Dictionary
 		    self.UIUpdates = cleanArr
-		    
+
 		    lock = nil
-		    
+
 		    var exceptionDicts() as Dictionary
-		    
+
 		    for i as integer = uiUpdates.LastIndex downto 0
 		      var dict as Dictionary = uiUpdates( i )
-		      
+
 		      if dict.KeyCount = 2 and dict.HasKey( kExceptionKey ) and dict.HasKey( kDataKey ) then
 		        exceptionDicts.Add dict
 		        uiUpdates.RemoveAt i
 		      end if
 		    next
-		    
+
 		    if uiUpdates.Count <> 0 then
 		      RaiseEvent UserInterfaceUpdate( uiUpdates )
 		    end if
-		    
+
 		    if exceptionDicts.Count <> 0 then
 		      RaiseEvent UnhandledException( exceptionDicts )
 		    end if
 		  end if
-		  
+
 		  lock = nil
-		  
+
 		  if IsFinished then
 		    RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off
 		  end if
-		  
+
 		End Sub
 	#tag EndMethod
 
@@ -355,38 +355,38 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  if RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Off then
 		    RaiseUserInterfaceUpdateTimer.RunMode = Timer.RunModes.Multiple
 		  end if
-		  
+
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 53746F70732070726F63657373696E6720696D6D6564696174656C7920616E6420636C6F7365732074686520546872656164506F6F6C2E
 		Sub Stop()
 		  DataQueue.IsDenied = true
-		  
+
 		  for each t as M_ThreadPool.PThread in Pool
 		    t.IsClosed = true
 		  next
-		  
+
 		  DataQueue.RemoveAll // When this succeeds, no thread will be able to attempt to lock the queue
 		  DataQueue.IsDenied = false
-		  
+
 		  for each t as M_ThreadPool.PThread in Pool
 		    select case t.ThreadState
 		    case Thread.ThreadStates.NotRunning
 		      //
 		      // Do nothing
 		      //
-		      
+
 		    case else
 		      t.Stop
-		      
+
 		    end select
 		  next
-		  
+
 		  if not IsClosed then
 		    PoolCleaner_Run( nil )
 		  end if
-		  
+
 		End Sub
 	#tag EndMethod
 
@@ -395,22 +395,22 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  if IsClosed then
 		    raise new UnsupportedOperationException( "Cannot queue data after calling Finish until all processes have completed" )
 		  end if
-		  
+
 		  if ActiveJobs = 0 then
 		    CoreCount = System.CoreCount // Update this here
 		    StartMicroseconds = System.Microseconds
 		    EndMicroseconds = 0.0
 		  end if
-		  
+
 		  var added as boolean = DataQueue.TryAdd( data, QueueLimit )
 		  WasFull = not added or ( QueueLimit > 0 and DataQueue.Count >= QueueLimit )
-		  
+
 		  if added and ActiveJobs < TrueMaximumJobs and DataQueue.Count <> 0 then
 		    AddThreadToPool
 		  end if
-		  
+
 		  WasQueueLoaded = WasQueueLoaded or added
-		  
+
 		  return added
 		End Function
 	#tag EndMethod
@@ -426,28 +426,28 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  if mType = value then
 		    return
 		  end if
-		  
+
 		  if not IsFinished then
 		    raise new RuntimeException( "Cannot change Type while the ThreadPool is running." )
 		  end if
-		  
+
 		  mType = value
-		  
+
 		  UIUpdatesLock.Type = value
 		  RaiseQueueEventsTimerLock.Type = value
-		  
+
 		  CreateQueuer
-		  
+
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0, Description = 5761697420756E74696C20616C6C20746872656164732061726520636F6D706C6574652E20496D706C69657320436C6F73652E
 		Sub Wait()
 		  Finish
-		  
+
 		  while not IsFinished
 		  wend
-		  
+
 		End Sub
 	#tag EndMethod
 
@@ -483,9 +483,9 @@ Implements M_ThreadPool.ThreadPoolInterface
 			  var lock as new LockHolder( PoolLock )
 			  var count as integer = Pool.Count
 			  lock = nil
-			  
+
 			  return count
-			  
+
 			End Get
 		#tag EndGetter
 		ActiveJobs As Integer
@@ -505,15 +505,15 @@ Implements M_ThreadPool.ThreadPoolInterface
 			  if StartMicroseconds = 0.0 then
 			    return 0.0
 			  end if
-			  
+
 			  var endMicroseconds as double = self.EndMicroseconds
-			  
+
 			  if endMicroseconds = 0.0 then
 			    endMicroseconds = System.Microseconds
 			  end if
-			  
+
 			  return endMicroseconds - StartMicroseconds
-			  
+
 			End Get
 		#tag EndGetter
 		ElapsedMicroseconds As Double
@@ -527,7 +527,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag Getter
 			Get
 			  return PoolCleaner isa object
-			  
+
 			End Get
 		#tag EndGetter
 		Private IsClosed As Boolean
@@ -541,7 +541,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag Getter
 			Get
 			  return ActiveJobs = 0
-			  
+
 			End Get
 		#tag EndGetter
 		IsFinished As Boolean
@@ -551,7 +551,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		#tag Getter
 			Get
 			  return QueueLimit > 0 and DataQueue.Count >= QueueLimit
-			  
+
 			End Get
 		#tag EndGetter
 		IsQueueFull As Boolean
@@ -561,7 +561,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 		MaximumJobs As Integer
 	#tag EndProperty
 
-	#tag Property, Flags = &h21, Description = 5365747320746865207479706573206F662054687265616473206173207468657920617265206C61756E636865642E204368616E67696E67207468697320646F6573206E6F742061666665637420616C72656164792D72756E6E696E6720546872656164732E
+	#tag Property, Flags = &h21
 		Private mType As Thread.Types = Thread.Types.Preemptive
 	#tag EndProperty
 
@@ -624,7 +624,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 			  else
 			    return CoreCount - 1
 			  end if
-			  
+
 			End Get
 		#tag EndGetter
 		Private TrueMaximumJobs As Integer
