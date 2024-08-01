@@ -236,10 +236,6 @@ Implements Iterable
 	#tag EndProperty
 
 
-	#tag Constant, Name = FirstIndex, Type = Double, Dynamic = False, Default = \"0", Scope = Public
-	#tag EndConstant
-
-
 	#tag ViewBehavior
 		#tag ViewProperty
 			Name="Name"
