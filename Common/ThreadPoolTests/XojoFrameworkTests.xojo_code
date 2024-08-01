@@ -253,31 +253,8 @@ Inherits TestGroup
 		  
 		  var rs as RowSet = db.SelectSQL( "SELECT id, s FROM preemptive_thread_test WHERE id = $1", index )
 		  
-		  //
-		  // As of this writing, RowSet is not thread-safe, so access to 
-		  // column values must be LOCKED UNIVERSALLY if there is a chance
-		  // that a preemptive thread is accessing a RowSet.
-		  //
-		  // Due to this limitation, do not access a RowSet from both
-		  // preemptive and cooperative threads simultaneously.
-		  //
-		  // As an alternative, use Type-switching to make sure this 
-		  // Thread is running cooperatively. (See commented code below.)
-		  //
-		   
-		  'var t as Thread = Thread.Current
-		  'var originalType as Thread.Types = t.Type
-		  '
-		  't.Type = Thread.Types.Cooperative
-		  
-		  ThreadPoolTestBase.UniversalRowSetLock.Signal
-		  
 		  var retrievedIndex as integer = rs.Column( "id" ).IntegerValue
 		  var retrievedString as string = rs.Column( "s" ).StringValue
-		  
-		  ThreadPoolTestBase.UniversalRowSetLock.Release
-		  
-		  't.Type = originalType
 		  
 		  if rs.RowCount = 1 and retrievedIndex = index and retrievedString = index.ToString then
 		    Store index, nil, true
