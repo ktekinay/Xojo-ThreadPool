@@ -84,6 +84,12 @@ arr.RemoveAll
 MessageBox arr.IndexOf( 1 ).ToString
 ```
 
+# Examples
+
+One or more examples will show how to implement `ThreadPool` in your own projects. These are not designed to do anything necessarily useful, merely to show techniques.
+
+**Note**: Running the examples in the IDE will be significantly slower than in a compiled app.
+
 # Dos and Don'ts
 
 - **Do** use `Semaphore` and `CriticalSection` generously to control flow of data that two threads might be manipulating.
