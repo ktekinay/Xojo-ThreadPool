@@ -267,6 +267,44 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub DictionariesFromParseJSONRunner(index As Integer, data As Variant)
+		  var dict as Dictionary = data
+		  
+		  var found as integer 
+		  for i as integer = 1 to 100
+		    found = dict.Value( kDictKey )
+		  next
+		  
+		  Store index, dict, found = index
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub DictionariesFromParseJSONTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf DictionariesFromParseJSONRunner )
+		  
+		  var arr() as Variant
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    var d as new Dictionary
+		    d.Value( kDictKey ) = i
+		    arr.Add d
+		  next
+		  
+		  var j as string = GenerateJSON( arr )
+		  arr = ParseJSON( j )
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    tp.Add i : arr( i )
+		  next
+		  
+		  tp.Wait
+		  
+		  Assert.Pass
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub HandledExceptionRunner(index As Integer, data As Variant)
 		  #pragma BreakOnExceptions false
 		  
@@ -622,6 +660,9 @@ Inherits TestGroup
 		Private Results() As Pair
 	#tag EndProperty
 
+
+	#tag Constant, Name = kDictKey, Type = String, Dynamic = False, Default = \"DictKey", Scope = Private
+	#tag EndConstant
 
 	#tag Constant, Name = kLastJobIndex, Type = Double, Dynamic = False, Default = \"49", Scope = Private
 	#tag EndConstant
