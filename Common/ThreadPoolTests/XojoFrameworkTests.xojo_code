@@ -300,7 +300,41 @@ Inherits TestGroup
 		  
 		  tp.Wait
 		  
-		  Assert.Pass
+		  CheckResults
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub DictionaryWithStaticRunner(index As Integer, data As Variant)
+		  static key as string = kDictKey
+		  
+		  var dict as Dictionary = data
+		  
+		  var found as integer 
+		  for i as integer = 1 to 100
+		    found = dict.Value( key )
+		  next
+		  
+		  Store index, nil, found = index
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub DictionaryWithStaticTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf DictionaryWithStaticRunner )
+		  
+		  var arr() as Variant
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    var d as new Dictionary
+		    d.Value( kDictKey ) = i
+		    tp.Add i : d
+		  next
+		  
+		  tp.Wait
+		  
+		  CheckResults
+		  
 		End Sub
 	#tag EndMethod
 
