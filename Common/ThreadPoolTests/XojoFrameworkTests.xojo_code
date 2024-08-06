@@ -241,6 +241,62 @@ Inherits TestGroup
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub CryptoRunner(index As Integer, data As Variant)
+		  var s as string = data
+		  
+		  var passed as boolean = true
+		  
+		  passed = passed and Crypto.MD5( s ).Size = 16
+		  
+		  passed = passed and Crypto.SHA1( s ).Size = 20
+		  passed = passed and Crypto.SHA2_256( s ).Size = ( 256 \ 8 )
+		  passed = passed and Crypto.SHA2_512( s ).Size = ( 512 \ 8 )
+		  passed = passed and Crypto.SHA3_256( s ).Size = ( 256 \ 8 )
+		  passed = passed and Crypto.SHA3_512( s ).Size = ( 512 \ 8 )
+		  
+		  passed = passed and Crypto.PBKDF2( s, s, 2, 32, Crypto.HashAlgorithms.SHA2_256 ).Size = 32
+		  
+		  passed = passed and Crypto.HMAC( s, s, Crypto.HashAlgorithms.SHA2_256 ).Size = ( 256 \ 8 )
+		  
+		  
+		  var pw as string = Crypto.GenerateRandomBytes( 16 )
+		  
+		  var encrypted as string 
+		  var decrypted as string
+		  
+		  encrypted = Crypto.AESEncrypt( pw, s, Crypto.BlockModes.CBC, pw )
+		  decrypted = Crypto.AESDecrypt( pw, encrypted, Crypto.BlockModes.CBC, pw )
+		  passed = passed and ( decrypted = s )
+		  
+		  encrypted = Crypto.BlowfishEncrypt( pw, s, Crypto.BlockModes.CBC, pw )
+		  decrypted = Crypto.BlowfishDecrypt( pw, encrypted, Crypto.BlockModes.CBC, pw )
+		  passed = passed and ( decrypted = s )
+		  
+		  encrypted = Crypto.TwoFishEncrypt( pw, s, Crypto.BlockModes.CBC, pw )
+		  decrypted = Crypto.TwoFishDecrypt( pw, encrypted, Crypto.BlockModes.CBC, pw )
+		  passed = passed and ( decrypted = s )
+		  
+		  
+		  Store index, s, passed
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub CryptoTest()
+		  var tp as new DelegateRunnerThreadPool( AddressOf CryptoRunner )
+		  
+		  for i as integer = 0 to kLastJobIndex
+		    tp.Add i : i.ToString( "000,000,000.000" )
+		  next
+		  
+		  tp.Wait
+		  
+		  CheckResults
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub DatabaseTestsRunner(index As Integer, data As Variant)
 		  var db as Database = data
 		  
