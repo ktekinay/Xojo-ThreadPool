@@ -275,7 +275,7 @@ Inherits TestGroup
 		    found = dict.Value( kDictKey )
 		  next
 		  
-		  Store index, dict, found = index
+		  Store index, nil, found = index
 		End Sub
 	#tag EndMethod
 
