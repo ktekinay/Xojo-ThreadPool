@@ -16,6 +16,10 @@ Inherits TestGroup
 		  var s as string = p.Left
 		  var bs as BinaryStream = p.Right
 		  
+		  //
+		  // Not using a Semaphore here just to test, but
+		  // in production, YOU SHOULD!!
+		  //
 		  bs.Write s
 		  
 		  Store index, nil, true
@@ -166,7 +170,11 @@ Inherits TestGroup
 		Private Sub BinaryStreamWriteRunner(index As Integer, data As Variant)
 		  var bs as BinaryStream = data
 		  
-		  bs.WriteInt32 index
+		  var s as string = index.ToString( "000000000000" )
+		  
+		  Locker.Signal
+		  bs.Write s
+		  Locker.Release
 		  
 		  Store index, nil, true
 		  
@@ -177,11 +185,10 @@ Inherits TestGroup
 		Sub BinaryStreamWriteTest()
 		  var tp as new DelegateRunnerThreadPool( AddressOf BinaryStreamWriteRunner )
 		  
-		  const kFileName as string = "TPBinaryStreamWrite.txt"
+		  var sourceMB as new MemoryBlock( 0 )
+		  sourceMB.LittleEndian = TargetLittleEndian
 		  
-		  var file as FolderItem = SpecialFolder.Temporary.Child( kFileName )
-		  
-		  var bs as BinaryStream = BinaryStream.Create( file, true )
+		  var bs as new BinaryStream( sourceMB )
 		  bs.LittleEndian = TargetLittleEndian
 		  
 		  for i as integer = 0 to kLastJobIndex
@@ -198,37 +205,25 @@ Inherits TestGroup
 		  bs.Close
 		  bs = nil
 		  
-		  file.Remove
-		  file = nil
+		  sourceMB = nil
 		  
-		  var arr( kLastJobIndex ) as integer
+		  var arr( kLastJobIndex ) as string
+		  
+		  const kByteLength as integer = 12
 		  
 		  for i as integer = 0 to kLastJobIndex
-		    var value as integer = mb.Int32Value( i * 4 )
+		    var value as string = mb.StringValue( i * kByteLength, kByteLength )
 		    arr( i ) = value
 		  next
 		  
 		  arr.Sort
 		  
 		  for i as integer = 0 to arr.LastIndex
-		    Assert.AreEqual i, arr( i )
+		    Assert.AreEqual i, arr( i ).ToInteger
 		  next
 		  
 		  CheckResults
 		  
-		  Finally
-		    if bs isa object then
-		      bs.Close
-		      bs = nil
-		    end if
-		    
-		    if file isa object then
-		      try
-		        file.Remove
-		      end try
-		      file = nil
-		    end if
-		    
 		End Sub
 	#tag EndMethod
 
