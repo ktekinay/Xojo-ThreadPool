@@ -43,8 +43,7 @@ Inherits Thread
 		    retrying = false
 		    
 		    try
-		      ThreadPoolInterface( host ).RaiseProcessEvent( data, self )
-		      
+		      ThreadPoolInterface( host ).RaiseProcessEvent( data )
 		    catch err as RuntimeException
 		      if err isa EndException or err isa ThreadEndException then
 		        raise err

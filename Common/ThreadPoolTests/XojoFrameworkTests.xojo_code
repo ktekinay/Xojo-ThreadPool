@@ -374,8 +374,6 @@ Inherits TestGroup
 		Sub DictionaryWithStaticTest()
 		  var tp as new DelegateRunnerThreadPool( AddressOf DictionaryWithStaticRunner )
 		  
-		  var arr() as Variant
-		  
 		  for i as integer = 0 to kLastJobIndex
 		    var d as new Dictionary
 		    d.Value( kDictKey ) = i

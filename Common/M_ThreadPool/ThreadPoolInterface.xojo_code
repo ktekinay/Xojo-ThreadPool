@@ -25,7 +25,7 @@ Private Interface ThreadPoolInterface
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub RaiseProcessEvent(data As Variant, sender As Thread)
+		Sub RaiseProcessEvent(data As Variant)
 		  
 		End Sub
 	#tag EndMethod

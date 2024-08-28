@@ -2,9 +2,8 @@
 Protected Class ExceptionThreadPool
 Inherits ThreadPool
 	#tag Event , Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Sub Process(data As Variant, currentThread As Thread)
+		Sub Process(data As Variant)
 		  #pragma unused data
-		  #pragma unused currentThread
 		  
 		  #pragma BreakOnExceptions false
 		  raise new NilObjectException

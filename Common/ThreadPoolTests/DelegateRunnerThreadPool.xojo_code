@@ -2,9 +2,7 @@
 Protected Class DelegateRunnerThreadPool
 Inherits ThreadPool
 	#tag Event , Description = 496D706C656D656E7420746F2068616E646C652070726F63657373696E67206F66206F6E65206974656D206F6620646174612E
-		Sub Process(data As Variant, currentThread As Thread)
-		  #pragma unused currentThread
-		  
+		Sub Process(data As Variant)
 		  var p as pair = data
 		  Runner.Invoke( p.Left, p.Right )
 		End Sub
@@ -130,18 +128,6 @@ Inherits ThreadPool
 			InitialValue=""
 			Type="Integer"
 			EditorType=""
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="Type"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
-			Type="Thread.Types"
-			EditorType="Enum"
-			#tag EnumValues
-				"0 - Cooperative"
-				"1 - Preemptive"
-			#tag EndEnumValues
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ElapsedMicroseconds"
