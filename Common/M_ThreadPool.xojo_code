@@ -1,6 +1,6 @@
 #tag Module
 Protected Module M_ThreadPool
-	#tag Constant, Name = kVersion, Type = String, Dynamic = False, Default = \"1.0", Scope = Protected
+	#tag Constant, Name = kVersion, Type = String, Dynamic = False, Default = \"1.1", Scope = Protected
 	#tag EndConstant
 
 

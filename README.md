@@ -114,6 +114,10 @@ All comments are also welcome.
 
 # Release Notes
 
+**1.1** (July 31, 2025)
+
+  - Replaced `Semaphore` with `CriticalSection` and always set `Type` to "Preemptive".
+
 **1.0** (Aug. 1, 2024)
 
   - Initial release.
