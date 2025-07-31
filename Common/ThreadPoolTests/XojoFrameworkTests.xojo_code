@@ -3,7 +3,7 @@ Protected Class XojoFrameworkTests
 Inherits TestGroup
 	#tag Event
 		Sub Setup()
-		  Locker = new Semaphore
+		  Locker = new CriticalSection
 		  Locker.Type = Thread.Types.Preemptive
 		End Sub
 	#tag EndEvent
@@ -17,7 +17,7 @@ Inherits TestGroup
 		  var bs as BinaryStream = p.Right
 		  
 		  //
-		  // Not using a Semaphore here just to test, but
+		  // Not using a CriticalSection here just to test, but
 		  // in production, YOU SHOULD!!
 		  //
 		  bs.Write s
@@ -172,9 +172,9 @@ Inherits TestGroup
 		  
 		  var s as string = index.ToString( "000000000000" )
 		  
-		  Locker.Signal
+		  Locker.Enter
 		  bs.Write s
-		  Locker.Release
+		  Locker.Leave
 		  
 		  Store index, nil, true
 		  
@@ -721,11 +721,11 @@ Inherits TestGroup
 	#tag Method, Flags = &h21
 		Private Sub Store(index As Integer, source As Variant, result As Boolean)
 		  if Results.Count = 0 then
-		    Locker.Signal
+		    Locker.Enter
 		    if Results.Count = 0 then
 		      Results.ResizeTo kLastJobIndex
 		    end if
-		    Locker.Release
+		    Locker.Leave
 		  end if
 		  
 		  Results( index ) = source : result
@@ -736,7 +736,7 @@ Inherits TestGroup
 
 
 	#tag Property, Flags = &h21
-		Private Locker As Semaphore
+		Private Locker As CriticalSection
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

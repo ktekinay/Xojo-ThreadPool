@@ -81,11 +81,11 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  CreateQueuer
 		  
-		  PoolLock = new Semaphore
-		  UIUpdatesLock = new Semaphore
-		  UIUpdatesLock.Type = mType
-		  RaiseQueueEventsTimerLock = new Semaphore
-		  RaiseQueueEventsTimerLock.Type = mType
+		  PoolLock = new CriticalSection
+		  UIUpdatesLock = new CriticalSection
+		  UIUpdatesLock.Type = Thread.Types.Preemptive // Always
+		  RaiseQueueEventsTimerLock = new CriticalSection
+		  RaiseQueueEventsTimerLock.Type = Thread.Types.Preemptive // Always
 		  
 		  RaiseQueueEventsTimer = new Timer
 		  #if TargetMobile
@@ -108,7 +108,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 
 	#tag Method, Flags = &h21
 		Private Sub CreateQueuer()
-		  DataQueue = new M_ThreadPool.Queuer( Type )
+		  DataQueue = new M_ThreadPool.Queuer
 		End Sub
 	#tag EndMethod
 
@@ -433,9 +433,6 @@ Implements M_ThreadPool.ThreadPoolInterface
 		  
 		  mType = value
 		  
-		  UIUpdatesLock.Type = value
-		  RaiseQueueEventsTimerLock.Type = value
-		  
 		  CreateQueuer
 		  
 		End Sub
@@ -582,7 +579,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private PoolLock As Semaphore
+		Private PoolLock As CriticalSection
 	#tag EndProperty
 
 	#tag Property, Flags = &h0, Description = 4C696D69747320746865206E756D626572206F66206974656D732074686174206D617920626520696E2074686520717565756520617420616E79206F6E652074696D6520746F206B6565702066726F6D206F7665726C6F6164696E67206D656D6F72792E20557365207A65726F20666F7220756E6C696D69746564206F7220736F6D65206D756C7469706C65206F662053797374656D2E436F7265436F756E742E
@@ -594,7 +591,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private RaiseQueueEventsTimerLock As Semaphore
+		Private RaiseQueueEventsTimerLock As CriticalSection
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -635,7 +632,7 @@ Implements M_ThreadPool.ThreadPoolInterface
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private UIUpdatesLock As Semaphore
+		Private UIUpdatesLock As CriticalSection
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
